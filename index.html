@@ -1054,6 +1054,129 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ========== ACTIVATION CODE STYLES ========== */
+        .activation-input-wrapper {
+            margin: 1.5rem 0;
+        }
+
+        .activation-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            font-size: 1.1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            letter-spacing: 2px;
+            font-family: monospace;
+            transition: all 0.3s ease;
+        }
+
+        .activation-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1);
+        }
+
+        .activation-input::placeholder {
+            letter-spacing: 0;
+            font-family: 'Noto Sans SC', sans-serif;
+            color: var(--text-secondary);
+        }
+
+        .activation-error {
+            color: var(--danger);
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .activation-divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--text-secondary);
+        }
+
+        .activation-divider::before,
+        .activation-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .activation-divider span {
+            padding: 0 1rem;
+            font-size: 0.9rem;
+        }
+
+        .activation-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(0, 212, 170, 0.1);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .activation-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .activation-tips {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .activation-tips p {
+            margin-bottom: 0.5rem;
+        }
+
+        .activation-tips ul {
+            margin-left: 1.5rem;
+        }
+
+        .activation-demo {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #fef3c7;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .activation-demo p {
+            margin-bottom: 0.5rem;
+            color: #92400e;
+        }
+
+        .activation-demo code {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            background: white;
+            border: 1px solid #fcd34d;
+            border-radius: 6px;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .activation-demo code:hover {
+            background: #fef3c7;
+        }
     </style>
 </head>
 <body>
@@ -1347,9 +1470,63 @@
                     确认支付 ¥29
                 </button>
 
+                <div class="activation-divider">
+                    <span>或</span>
+                </div>
+
+                <button class="activation-btn" onclick="openActivationModal()">
+                    🔑 使用激活码
+                </button>
+
                 <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
                     支付即表示同意《会员服务协议》
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activation Code Modal -->
+    <div class="modal-overlay" id="activationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>🎁 激活码激活</h3>
+                <button class="modal-close" onclick="closeActivationModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔑</div>
+                    <p style="color: var(--text-secondary);">输入您的激活码，解锁会员特权</p>
+                </div>
+                
+                <div class="activation-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="activationCodeInput" 
+                        class="activation-input"
+                        placeholder="请输入激活码，如：SKI-YEAR-001"
+                        onkeypress="if(event.key==='Enter')submitActivation()"
+                    >
+                </div>
+                
+                <div id="activationError" class="activation-error" style="display: none;"></div>
+                
+                <button class="pay-btn" onclick="submitActivation()" style="margin-top: 1rem;">
+                    激活会员
+                </button>
+                
+                <div class="activation-tips">
+                    <p><strong>💡 如何获取激活码？</strong></p>
+                    <ul>
+                        <li>购买后，激活码会发送至您的邮箱</li>
+                        <li>或联系客服获取人工激活码</li>
+                    </ul>
+                </div>
+
+                <div class="activation-demo">
+                    <p><strong>🧪 体验码（测试用）</strong></p>
+                    <code onclick="document.getElementById('activationCodeInput').value='SKI-YEAR-001'">SKI-YEAR-001</code>
+                    <code onclick="document.getElementById('activationCodeInput').value='SKI-MONTH-001'">SKI-MONTH-001</code>
+                </div>
             </div>
         </div>
     </div>
@@ -1361,7 +1538,7 @@
                 <div class="success-content">
                     <div class="success-icon">✓</div>
                     <h3>开通成功！</h3>
-                    <p>欢迎成为 ShapeSki AI 会员</p>
+                    <p>欢迎成为 ShapeSki AI <span id="memberTypeDisplay"></span></p>
                     <div class="free-analysis-count">
                         <div class="count" id="analysisCount">∞</div>
                         <div>剩余分析次数</div>
@@ -1401,6 +1578,106 @@
         let freeAnalysisLeft = localStorage.getItem('freeAnalysis') !== 'used' ? 1 : 0;
         let isMember = localStorage.getItem('isMember') === 'true';
 
+        // ========== ACTIVATION CODE SYSTEM ==========
+        // 预设激活码列表（可自定义）
+        const ACTIVATION_CODES = {
+            // 月度会员码
+            'SKI-MONTH-001': { type: 'monthly', name: '月度会员', days: 30 },
+            'SKI-MONTH-002': { type: 'monthly', name: '月度会员', days: 30 },
+            'SKI-MONTH-003': { type: 'monthly', name: '月度会员', days: 30 },
+            // 年度会员码
+            'SKI-YEAR-001': { type: 'yearly', name: '年度会员', days: 365 },
+            'SKI-YEAR-002': { type: 'yearly', name: '年度会员', days: 365 },
+            // 永久会员码（示例）
+            'SKI-FOREVER-001': { type: 'forever', name: '永久会员', days: 9999 },
+            // 测试码
+            'FREE-TRY-2024': { type: 'trial', name: '试用延长', days: 7 }
+        };
+
+        // 验证激活码
+        function verifyActivationCode(code) {
+            const normalizedCode = code.trim().toUpperCase();
+            if (ACTIVATION_CODES[normalizedCode]) {
+                return {
+                    valid: true,
+                    ...ACTIVATION_CODES[normalizedCode]
+                };
+            }
+            return { valid: false };
+        }
+
+        // 激活会员
+        function activateMembership(codeType, days, code) {
+            const memberType = codeType === 'forever' ? '永久会员' : 
+                              codeType === 'yearly' ? '年度会员' : 
+                              codeType === 'monthly' ? '月度会员' : '试用会员';
+            
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + days);
+
+            localStorage.setItem('isMember', 'true');
+            localStorage.setItem('memberType', memberType);
+            localStorage.setItem('memberExpiry', expiryDate.toISOString());
+            localStorage.setItem('activationCode', code);
+            
+            isMember = true;
+            updatePaywall();
+            
+            return { success: true, memberType, expiryDate };
+        }
+
+        // 检查会员是否过期
+        function checkMembershipExpiry() {
+            const expiryStr = localStorage.getItem('memberExpiry');
+            if (expiryStr) {
+                const expiry = new Date(expiryStr);
+                if (new Date() > expiry && localStorage.getItem('memberType') !== '永久会员') {
+                    localStorage.setItem('isMember', 'false');
+                    isMember = false;
+                    updatePaywall();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // 打开激活码弹窗
+        function openActivationModal() {
+            closePaymentModal();
+            document.getElementById('activationModal').classList.add('active');
+            document.getElementById('activationCodeInput').value = '';
+            document.getElementById('activationError').style.display = 'none';
+        }
+
+        // 关闭激活码弹窗
+        function closeActivationModal() {
+            document.getElementById('activationModal').classList.remove('active');
+        }
+
+        // 验证并激活
+        function submitActivation() {
+            const code = document.getElementById('activationCodeInput').value;
+            const errorEl = document.getElementById('activationError');
+            
+            if (!code.trim()) {
+                errorEl.textContent = '请输入激活码';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            const result = verifyActivationCode(code);
+            
+            if (result.valid) {
+                const activateResult = activateMembership(result.type, result.days, code);
+                closeActivationModal();
+                document.getElementById('successModal').classList.add('active');
+                document.getElementById('memberTypeDisplay').textContent = activateResult.memberType;
+            } else {
+                errorEl.textContent = '激活码无效，请检查后重新输入';
+                errorEl.style.display = 'block';
+            }
+        }
+
         // ========== INITIALIZE TENSORFLOW.JS ==========
         async function initTensorFlow() {
             showProcessing('正在加载 AI 模型...', 10);
@@ -1430,6 +1707,9 @@
 
         // Initialize on page load
         initTensorFlow();
+
+        // Check membership expiry on load
+        checkMembershipExpiry();
 
         // ========== SPORT TOGGLE ==========
         function toggleSport(sport) {

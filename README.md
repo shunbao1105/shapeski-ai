@@ -21,8 +21,25 @@ AI-powered skiing and snowboarding motion analysis platform.
 | Monthly | ¥29/mo | Unlimited analysis |
 | Annual | ¥199/yr | Best value |
 
-**Payment method:** WeChat Pay (QR code)
-**Contact for activation:** friendly farm (WeChat)
+### Activation Methods
+
+**1. WeChat Pay (QR Code)**
+- Scan QR code and pay
+- Contact friendly farm on WeChat
+- Receive activation code
+
+**2. Activation Code**
+- Enter code to activate directly
+- No payment needed if you have a code
+- Works instantly
+
+### Activation Codes (Demo)
+
+| Code | Type | Duration |
+|------|------|----------|
+| `SKI-YEAR-001` | 年度会员 | 365 days |
+| `SKI-MONTH-001` | 月度会员 | 30 days |
+| `SKI-FOREVER-001` | 永久会员 | Forever |
 
 ## Files
 

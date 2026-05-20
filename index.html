@@ -1077,7 +1077,7 @@
         <div class="nav-links">
             <a href="#demo">功能演示</a>
             <a href="#pricing">价格方案</a>
-            <a href="#" class="nav-cta" onclick="showPaymentModal()">开通会员</a>
+            <a href="开通会员.html" class="nav-cta">开通会员</a>
         </div>
     </nav>
 
@@ -1098,7 +1098,7 @@
                     <div class="paywall-icon">👑</div>
                     <h3>开通会员解锁全部功能</h3>
                     <p>免费试用 1 次<br>会员无限次分析</p>
-                    <button class="pricing-btn primary" onclick="showPaymentModal()">
+                    <button class="pricing-btn primary" onclick="location.href='开通会员.html'">
                         立即开通 ¥29/月
                     </button>
                 </div>
@@ -1259,7 +1259,7 @@
                         <li>3 条改进建议</li>
                         <li>单板/双板模式切换</li>
                     </ul>
-                    <button class="pricing-btn secondary" onclick="handleUploadClick()">立即体验</button>
+                    <button class="pricing-btn secondary" onclick="window.location.href='index.html'">立即体验</button>
                 </div>
 
                 <!-- Pro Plan -->
@@ -1275,7 +1275,7 @@
                         <li>历史记录保存</li>
                         <li>优先技术支持</li>
                     </ul>
-                    <button class="pricing-btn primary" onclick="showPaymentModal('pro')">开通会员</button>
+                    <button class="pricing-btn primary" onclick="location.href='开通会员.html'">开通会员</button>
                 </div>
 
                 <!-- Enterprise Plan -->
@@ -1290,7 +1290,7 @@
                         <li>自定义训练计划</li>
                         <li>专属企业客服</li>
                     </ul>
-                    <button class="pricing-btn secondary" onclick="showPaymentModal('annual')">联系我们</button>
+                    <button class="pricing-btn secondary" onclick="location.href='开通会员.html'">联系我们</button>
                 </div>
             </div>
         </div>
@@ -1442,7 +1442,7 @@
         // ========== UPLOAD HANDLING ==========
         function handleUploadClick() {
             if (!isMember && freeAnalysisLeft <= 0) {
-                showPaymentModal();
+                location.href = '开通会员.html';
                 return;
             }
             document.getElementById('videoInput').click();
@@ -1470,7 +1470,7 @@
             uploadArea.classList.remove('dragover');
 
             if (!isMember && freeAnalysisLeft <= 0) {
-                showPaymentModal();
+                location.href = '开通会员.html';
                 return;
             }
 

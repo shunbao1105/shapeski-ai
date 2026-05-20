@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShapeSki AI - 立即开通会员</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #1E3A5F;
+            --accent: #00D4AA;
+            --bg: #F8FAFC;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .logo {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #64748B;
+            margin-bottom: 30px;
+        }
+        .price-tag {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        .period {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .features {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .feature {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1A1A2E;
+        }
+        .feature::before {
+            content: '✓';
+            color: var(--accent);
+            font-weight: bold;
+        }
+        .payment-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #E2E8F0;
+        }
+        .payment-title {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .qr-codes {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .qr-item {
+            text-align: center;
+        }
+        .qr-box {
+            width: 150px;
+            height: 150px;
+            background: #f8fafc;
+            border: 2px dashed #E2E8F0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 4rem;
+        }
+        .qr-label {
+            font-size: 0.9rem;
+            color: #64748B;
+        }
+        .instructions {
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .instructions h3 {
+            color: #92400E;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        .instructions ol {
+            padding-left: 20px;
+            color: #78350f;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+        .contact-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(0,212,170,0.1), rgba(30,58,95,0.1));
+            border-radius: 12px;
+        }
+        .contact-section h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .contact-section p {
+            color: #64748B;
+            font-size: 0.9rem;
+        }
+        .contact-id {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .success-msg {
+            display: none;
+            background: #ecfdf5;
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #065f46;
+        }
+        .success-msg.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">🎿</div>
+            <h1>开通 ShapeSki AI 会员</h1>
+            <p class="subtitle">解锁无限次 AI 动作分析</p>
+
+            <div class="price-tag">
+                <div class="price">¥29</div>
+                <div class="period">/ 月度会员</div>
+            </div>
+
+            <div class="features">
+                <div class="feature">无限次视频分析</div>
+                <div class="feature">详细评分报告</div>
+                <div class="feature">10 条改进建议</div>
+                <div class="feature">历史记录保存</div>
+                <div class="feature">优先技术支持</div>
+            </div>
+
+            <div class="payment-section">
+                <div class="payment-title">💳 扫码支付</div>
+                <div class="qr-codes">
+                    <div class="qr-item">
+                        <div class="qr-box" id="wechatQR">
+                            <img src="wechat-pay.jpg" alt="微信支付" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">
+                        </div>
+                        <div class="qr-label" style="color:#07C160;font-weight:600;">💚 微信支付</div>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    <h3>📋 支付后激活步骤</h3>
+                    <ol>
+                        <li>截图或保存收款码</li>
+                        <li>扫码支付 ¥29</li>
+                        <li>支付完成后，<strong>截图</strong>保存凭证</li>
+                        <li>微信搜索：<strong>friendly farm</strong> 联系我</li>
+                        <li>发送付款截图，我会立即为你开通会员</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="contact-section">
+                <h3>📱 快速联系</h3>
+                <p>付款后联系开通会员</p>
+                <p class="contact-id">微信 ID：friendly farm</p>
+            </div>
+
+            <div class="success-msg" id="successMsg">
+                <strong>✅ 支付成功！</strong><br>
+                请添加客服微信开通会员，会员 ID 将发送到您的微信
+            </div>
+
+            <a href="index.html" class="back-btn">← 返回网站</a>
+        </div>
+    </div>
+
+    <script>
+        // 简单的支付完成模拟（实际使用时替换为真实处理）
+        function markAsPaid() {
+            document.getElementById('successMsg').classList.add('show');
+        }
+    </script>
+</body>
+</html>

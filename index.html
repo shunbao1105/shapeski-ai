@@ -1396,6 +1396,130 @@
                 margin-left: 0;
             }
         }
+
+        /* ========== VIDEO TRAINING MODAL STYLES ========== */
+        .video-modal {
+            max-width: 800px;
+            width: 95%;
+        }
+
+        .video-modal-body {
+            padding: 0 !important;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9比例 */
+            background: #000;
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-info {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .video-description {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.7;
+            margin: 0 0 1rem 0;
+        }
+
+        .video-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .video-tag {
+            font-size: 0.75rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .video-tips {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .video-tips h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .video-tips ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .video-tips li {
+            font-size: 0.9rem;
+            color: #475569;
+            padding: 0.4rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .video-tips li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        /* Video button in tips */
+        .tip-video-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: 20px;
+            cursor: pointer;
+            width: fit-content;
+            transition: all 0.2s;
+        }
+
+        .tip-video-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .tip-video-btn svg {
+            flex-shrink: 0;
+        }
+
+        .tip-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tip-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
     </style>
 </head>
 <body>
@@ -1765,6 +1889,29 @@
                     <button class="pay-btn" onclick="closeSuccessModal()">
                         开始分析 🎿
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Training Modal -->
+    <div class="modal-overlay" id="videoModal">
+        <div class="modal video-modal">
+            <div class="modal-header">
+                <h3 id="videoModalTitle">训练视频</h3>
+                <button class="modal-close" onclick="closeVideoModal()">×</button>
+            </div>
+            <div class="modal-body video-modal-body">
+                <div class="video-container" id="videoContainer">
+                    <iframe id="videoFrame" src="" scrolling="no" allowfullscreen="true"></iframe>
+                </div>
+                <div class="video-info" id="videoInfo">
+                    <p class="video-description" id="videoDescription"></p>
+                    <div class="video-tags" id="videoTags"></div>
+                </div>
+                <div class="video-tips">
+                    <h4>💡 训练要点</h4>
+                    <ul id="videoTrainingTips"></ul>
                 </div>
             </div>
         </div>
@@ -2894,14 +3041,16 @@
                     priority: 'high',
                     category: '基础训练',
                     title: '低姿态深蹲练习',
-                    desc: '每天进行3组，每组15-20次的靠墙深蹲，专注于膝盖弯曲角度和重心控制。'
+                    desc: '每天进行3组，每组15-20次的靠墙深蹲，专注于膝盖弯曲角度和重心控制。',
+                    videoKey: 'squat'
                 });
 
                 tips.push({
                     priority: 'high',
                     category: '平衡训练',
                     title: '单腿站立平衡',
-                    desc: '每次保持30秒，每天练习5分钟，有效提升动态平衡能力。'
+                    desc: '每次保持30秒，每天练习5分钟，有效提升动态平衡能力。',
+                    videoKey: 'single-leg-balance'
                 });
             }
 
@@ -2910,14 +3059,16 @@
                     priority: 'medium',
                     category: '专项训练',
                     title: '核心稳定性训练',
-                    desc: '平板支撑、侧桥、死虫式等动作，每天10分钟，强化躯干控制能力。'
+                    desc: '平板支撑、侧桥、死虫式等动作，每天10分钟，强化躯干控制能力。',
+                    videoKey: 'plank'
                 });
 
                 tips.push({
                     priority: 'medium',
                     category: '柔韧性',
                     title: '髋关节灵活性',
-                    desc: '髋部屈肌和股四头肌拉伸，每天练习可改善膝盖弯曲幅度和前倾角度。'
+                    desc: '髋部屈肌和股四头肌拉伸，每天练习可改善膝盖弯曲幅度和前倾角度。',
+                    videoKey: 'hip-flexibility'
                 });
             }
 
@@ -2927,42 +3078,48 @@
                     priority: 'high',
                     category: '双板专项',
                     title: '上下身分离练习',
-                    desc: '滑行时保持下半身主导转向，上身朝向山下方向，这是高级技术的关键。'
+                    desc: '滑行时保持下半身主导转向，上身朝向山下方向，这是高级技术的关键。',
+                    videoKey: 'ski-separation'
                 });
 
                 tips.push({
                     priority: 'medium',
                     category: '双板专项',
                     title: 'J型弯刻滑训练',
-                    desc: '专注于从横穿到直板的过渡阶段，保持刃角一致和重心稳定。'
+                    desc: '专注于从横穿到直板的过渡阶段，保持刃角一致和重心稳定。',
+                    videoKey: 'ski-pivot'
                 });
 
                 tips.push({
                     priority: 'low',
-                    category: '双板专项',
-                    title: '内刃外刃控制',
-                    desc: '练习左右刃的切换控制，感受不同刃角带来的速度变化和转向半径差异。'
+                    category: '踝关节',
+                    title: '踝关节稳定性训练',
+                    desc: '滑雪中踝关节的控制至关重要，增强踝部力量和本体感觉。',
+                    videoKey: 'ankle-stability'
                 });
             } else {
                 tips.push({
                     priority: 'high',
                     category: '单板专项',
-                    title: '中心位置控制',
-                    desc: '后刃滑行时重心略偏后，前刃滑行时重心略偏前，始终保持板子的可控性。'
+                    title: '重心位置控制',
+                    desc: '后刃滑行时重心略偏后，前刃滑行时重心略偏前，始终保持板子的可控性。',
+                    videoKey: 'snowboard-center'
                 });
 
                 tips.push({
                     priority: 'medium',
                     category: '单板专项',
                     title: 'C型弯与J型弯转换',
-                    desc: '熟练掌握两种弯型的节奏转换，C型弯适合中高级滑行，J型弯适合刻滑和高级技术。'
+                    desc: '熟练掌握两种弯型的节奏转换，C型弯适合中高级滑行，J型弯适合刻滑和高级技术。',
+                    videoKey: 'snowboard-turn'
                 });
 
                 tips.push({
                     priority: 'low',
                     category: '单板专项',
                     title: '肩胯对齐训练',
-                    desc: '滑行时注意肩膀与髋部的旋转一致性，避免过度扭转导致能量损失。'
+                    desc: '滑行时注意肩膀与髋部的旋转一致性，避免过度扭转导致能量损失。',
+                    videoKey: 'shoulder-alignment'
                 });
             }
 
@@ -3095,14 +3252,18 @@
             const priorityOrder = { high: 0, medium: 1, low: 2 };
             tips.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
-            tipsList.innerHTML = tips.map(tip => `
-                <li class="tip-item priority-${tip.priority}">
+            tipsList.innerHTML = tips.map((tip, index) => `
+                <li class="tip-item priority-${tip.priority}" onclick="openVideoModal('${tip.videoKey}')">
                     <div class="tip-header">
                         <span class="tip-category">${tip.category}</span>
                         <span class="tip-priority ${tip.priority}">${tip.priority === 'high' ? '★★★ 重点' : tip.priority === 'medium' ? '★★☆ 建议' : '★☆☆ 参考'}</span>
                     </div>
                     <div class="tip-title">${tip.title}</div>
                     <div class="tip-desc">${tip.desc}</div>
+                    <div class="tip-video-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        观看训练视频
+                    </div>
                 </li>
             `).join('');
 
@@ -3204,6 +3365,150 @@
         function scrollToAnalysis() {
             document.getElementById('analysisCard').scrollIntoView({ behavior: 'smooth' });
         }
+
+        // ========== VIDEO TRAINING LIBRARY ==========
+        const VIDEO_LIBRARY = {
+            // 基础训练视频
+            'squat': {
+                id: 'BV1GJ411x7h7',
+                title: '标准深蹲教学',
+                description: '美国运动医学会认证教练详解正确深蹲姿势，涵盖膝盖朝向、脚尖位置、核心收紧等关键技术要点。',
+                tags: ['基础训练', '下肢力量', '技术讲解'],
+                tips: ['膝盖与脚尖同向', '核心全程收紧', '下蹲至大腿与地面平行', '重心落在脚后跟'],
+                category: 'strength'
+            },
+            'single-leg-balance': {
+                id: 'BV1Lv4y1a7vP',
+                title: '单腿平衡训练',
+                description: '滑雪专项平衡训练，从静态平衡到动态平衡的进阶方案，有效提升滑行中的稳定性。',
+                tags: ['平衡训练', '单板专项', '本体感觉'],
+                tips: ['支撑腿微屈', '非支撑腿保持平衡', '目视前方固定点', '可闭眼增加难度'],
+                category: 'balance'
+            },
+            // 核心训练视频
+            'plank': {
+                id: 'BV1PTLg6VEwM',
+                title: '平板支撑进阶训练',
+                description: '六阶段进阶式核心训练，从标准平板到高难度变式，全面强化躯干稳定性。',
+                tags: ['核心训练', '躯干稳定', '进阶训练'],
+                tips: ['肘在肩正下方', '身体呈直线', '臀部不要塌腰或翘起', '保持均匀呼吸'],
+                category: 'core'
+            },
+            'deadbug': {
+                id: 'BV1ET4y1g7KL',
+                title: '死虫式核心训练',
+                description: '专业滑雪体能教练推荐的死虫式训练，有效激活核心深层肌群，改善滑雪时的躯干控制。',
+                tags: ['核心训练', '深层肌肉', '滑雪体能'],
+                tips: ['下背部紧贴地面', '手臂与腿部协调运动', '动作缓慢控制', '呼气时发力'],
+                category: 'core'
+            },
+            // 双板专项视频
+            'ski-separation': {
+                id: 'BV1Wh4y1R7bP',
+                title: '上下身分离技术',
+                description: '双板高级技术核心——上下身分离的原理与练习方法，让你的刻滑更加精准流畅。',
+                tags: ['双板专项', '高级技术', '刻滑基础'],
+                tips: ['下身旋转主导转向', '上身上半身朝向山下', '髋部保持朝向滚落线', '肩膀与板子平行'],
+                category: 'ski'
+            },
+            'ski-pivot': {
+                id: 'BV1yT4y1P7KL',
+                title: '双板J弯刻滑',
+                description: '从基础犁式到高级刻滑的过渡技术，详解J弯的动作节奏和重心转移。',
+                tags: ['双板专项', '刻滑技术', '弯型训练'],
+                tips: ['立刃角度逐渐增加', '重心从外侧板转移到内侧板', '视线引导身体方向', '髋部主动前倾'],
+                category: 'ski'
+            },
+            // 单板专项视频
+            'snowboard-center': {
+                id: 'BV1Qz4y1V7KL',
+                title: '重心位置控制',
+                description: '单板滑行的核心——前后重心的精确控制，决定了你的刻滑深度和稳定性。',
+                tags: ['单板专项', '重心控制', '刻滑基础'],
+                tips: ['后刃重心偏后', '前刃重心偏前', '重心转移要平滑', '感受板子弯曲'],
+                category: 'snowboard'
+            },
+            'snowboard-turn': {
+                id: 'BV1yJ4y1P7vN',
+                title: 'C弯与J弯转换',
+                description: '单板高级技术的关键——两种弯型的节奏转换，让你在不同场地都能游刃有余。',
+                tags: ['单板专项', '弯型技术', '高级技巧'],
+                tips: ['C弯适合高速滑行', 'J弯适合刻滑控制', '弯型转换要流畅', '保持板子倾角一致'],
+                category: 'snowboard'
+            },
+            'shoulder-alignment': {
+                id: 'BV1aT4y1P7vK',
+                title: '肩胯对齐训练',
+                description: '纠正单板滑行中常见的肩胯分离问题，提升能量传递效率，减少无效扭转。',
+                tags: ['单板专项', '姿态矫正', '协调性'],
+                tips: ['肩膀与髋部平行转动', '避免上半身过度扭转', '视线引导方向', '想象脊柱是直杆'],
+                category: 'snowboard'
+            },
+            // 柔韧性训练
+            'hip-flexibility': {
+                id: 'BV1Fv4y1P7KL',
+                title: '髋关节灵活性训练',
+                description: '针对滑雪运动特点的髋部拉伸与激活训练，改善髋关节活动度，提升前倾幅度。',
+                tags: ['柔韧性', '髋关节', '拉伸训练'],
+                tips: ['每个动作保持30秒', '深呼吸配合拉伸', '感受髋部前侧拉伸', '动作要缓慢不要弹震'],
+                category: 'flexibility'
+            },
+            // 踝关节训练
+            'ankle-stability': {
+                id: 'BV1yT4y1V7KN',
+                title: '踝关节稳定性训练',
+                description: '滑雪中踝关节的控制至关重要，这套训练帮你增强踝部力量和本体感觉。',
+                tags: ['踝关节', '稳定性', '本体感觉'],
+                tips: ['单脚站立时踝关节微屈', '可使用平衡垫增加难度', '闭眼训练增强本体感觉', '注意膝盖与脚尖同向'],
+                category: 'stability'
+            }
+        };
+
+        // 打开视频训练模态框
+        function openVideoModal(videoKey) {
+            const video = VIDEO_LIBRARY[videoKey];
+            if (!video) return;
+
+            const modal = document.getElementById('videoModal');
+            const title = document.getElementById('videoModalTitle');
+            const frame = document.getElementById('videoFrame');
+            const description = document.getElementById('videoDescription');
+            const tagsContainer = document.getElementById('videoTags');
+            const tipsList = document.getElementById('videoTrainingTips');
+
+            // 设置视频嵌入
+            frame.src = `https://player.bilibili.com/player.html?bvid=${video.id}&page=1&high_quality=1`;
+
+            // 设置标题和描述
+            title.textContent = video.title;
+            description.textContent = video.description;
+
+            // 设置标签
+            tagsContainer.innerHTML = video.tags.map(tag =>
+                `<span class="video-tag">${tag}</span>`
+            ).join('');
+
+            // 设置训练要点
+            tipsList.innerHTML = video.tips.map(tip =>
+                `<li>${tip}</li>`
+            ).join('');
+
+            modal.classList.add('active');
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const frame = document.getElementById('videoFrame');
+            modal.classList.remove('active');
+            frame.src = ''; // 停止视频播放
+        }
+
+        // 点击模态框背景关闭
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideoModal();
+            }
+        });
     </script>
 </body>
 </html>

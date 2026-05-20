@@ -1177,6 +1177,225 @@
         .activation-demo code:hover {
             background: #fef3c7;
         }
+
+        /* ========== PROFESSIONAL ANALYSIS STYLES ========== */
+        .dimension-scores {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .dimension-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .dimension-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .dim-label {
+            width: 100px;
+            font-size: 0.85rem;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+
+        .dim-bar-wrap {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .dim-bar {
+            height: 100%;
+        }
+
+        .dim-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .dim-score {
+            width: 50px;
+            font-size: 0.8rem;
+            color: #475569;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .grade-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 2px solid;
+            border-radius: 50px;
+            width: fit-content;
+            margin: 1rem auto 0;
+        }
+
+        .grade-letter {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .grade-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .feedback-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .feedback-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .feedback-icon.success { background: #d1fae5; color: #059669; }
+        .feedback-icon.warning { background: #fef3c7; color: #d97706; }
+        .feedback-icon.info { background: #dbeafe; color: #2563eb; }
+        .feedback-icon.excellent { background: #fef3c7; color: #d97706; }
+        .feedback-icon.danger { background: #fee2e2; color: #dc2626; }
+
+        .feedback-content {
+            flex: 1;
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .feedback-header h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .feedback-dim {
+            font-size: 0.75rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .feedback-score {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #0ea5e9;
+            margin-left: auto;
+        }
+
+        .feedback-content p {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .tip-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .tip-item.priority-high {
+            border-left: 3px solid #ef4444;
+        }
+
+        .tip-item.priority-medium {
+            border-left: 3px solid #f59e0b;
+        }
+
+        .tip-item.priority-low {
+            border-left: 3px solid #3b82f6;
+        }
+
+        .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tip-category {
+            font-size: 0.75rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .tip-priority {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .tip-priority.high { color: #ef4444; }
+        .tip-priority.medium { color: #f59e0b; }
+        .tip-priority.low { color: #3b82f6; }
+
+        .tip-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.35rem;
+        }
+
+        .tip-desc {
+            font-size: 0.85rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .dimension-item {
+                flex-wrap: wrap;
+            }
+            .dim-label {
+                width: 100%;
+                margin-bottom: 0.25rem;
+            }
+            .dim-score {
+                width: auto;
+            }
+            .feedback-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            .feedback-score {
+                margin-left: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1999,28 +2218,48 @@
                     // 关键修复：不再依赖 videoElement.ended，只用 frameCount 判断
                     if (frameCount >= totalFrames) {
                         // 分析完成
-                        showProcessing('生成分析报告...', 90);
+                        showProcessing('正在生成专业分析报告...', 90);
 
-                        let score = 75;
+                        let scores = { total: 75, kneeStability: 18, corePosture: 18, armCoordination: 14, balanceCenter: 12, movementFlow: 13 };
                         let feedback = [];
                         let tips = [];
 
-                        if (keypointsData.length > 0 && detector) {
+                        if (keypointsData.length > 0) {
                             try {
                                 const latestPose = keypointsData[keypointsData.length - 1];
-                                const avgConfidence = latestPose.keypoints.reduce((sum, kp) => sum + (kp.score || 0), 0) / latestPose.keypoints.length;
-                                score = Math.round(60 + avgConfidence * 40);
-                                feedback = analyzePoseFeedback(latestPose);
-                                tips = generateTips(score);
+                                // 使用专业多维度评分系统
+                                scores = calculateProfessionalScore(latestPose, keypointsData);
+                                feedback = analyzePoseFeedback(latestPose, keypointsData);
+                                tips = generateTips(scores.total, latestPose, keypointsData);
                             } catch (e) {
-                                console.warn('Pose analysis error:', e);
-                                score = 75;
-                                feedback = [{ type: 'success', title: '整体姿态', desc: '姿态分析完成，建议参考改进建议进行练习' }];
-                                tips = generateTips(score);
+                                console.warn('Analysis error, using default:', e);
+                                feedback = [{
+                                    type: 'success',
+                                    dimension: '综合评价',
+                                    score: 75,
+                                    title: '姿态分析完成',
+                                    desc: '已完成基础姿态分析，建议参考以下训练建议进行提升。'
+                                }];
+                                tips = generateTips(75, null, null);
                             }
+                        } else {
+                            // 无姿态数据时生成基础报告
+                            feedback = [{
+                                type: 'warning',
+                                dimension: '检测提醒',
+                                score: 0,
+                                title: '未检测到清晰人体姿态',
+                                desc: '建议确保视频中人物完整可见，光线充足，背景简洁。检测到人体将提供更准确的分析。'
+                            }];
+                            tips = [{
+                                priority: 'medium',
+                                category: '拍摄技巧',
+                                title: '优化拍摄环境',
+                                desc: '确保人物在画面中清晰可见，避免遮挡和逆光。适当拉远距离可获得更完整的人体检测。'
+                            }];
                         }
 
-                        displayResults(score, feedback, tips);
+                        displayResults(scores, feedback, tips);
 
                         setTimeout(() => {
                             hideProcessing();
@@ -2193,75 +2432,580 @@
             ctx.shadowBlur = 0;
         }
 
-        // Analyze pose and generate feedback
-        function analyzePoseFeedback(pose) {
+        // ========== PROFESSIONAL ANALYSIS SYSTEM ==========
+
+        // 专业分析系统 - 计算多维度评分
+        function calculateProfessionalScore(pose, keypointsData) {
+            const scores = {
+                kneeStability: 0,      // 下肢稳定性 (25分)
+                corePosture: 0,         // 躯干姿态 (25分)
+                armCoordination: 0,     // 上肢协调 (20分)
+                balanceCenter: 0,       // 重心平衡 (15分)
+                movementFlow: 0,        // 动作流畅度 (15分)
+                total: 0
+            };
+
+            // 提取关键点
+            const kp = {
+                nose: pose.keypoints.find(k => k.name === 'nose'),
+                leftShoulder: pose.keypoints.find(k => k.name === 'left_shoulder'),
+                rightShoulder: pose.keypoints.find(k => k.name === 'right_shoulder'),
+                leftElbow: pose.keypoints.find(k => k.name === 'left_elbow'),
+                rightElbow: pose.keypoints.find(k => k.name === 'right_elbow'),
+                leftWrist: pose.keypoints.find(k => k.name === 'left_wrist'),
+                rightWrist: pose.keypoints.find(k => k.name === 'right_wrist'),
+                leftHip: pose.keypoints.find(k => k.name === 'left_hip'),
+                rightHip: pose.keypoints.find(k => k.name === 'right_hip'),
+                leftKnee: pose.keypoints.find(k => k.name === 'left_knee'),
+                rightKnee: pose.keypoints.find(k => k.name === 'right_knee'),
+                leftAnkle: pose.keypoints.find(k => k.name === 'left_ankle'),
+                rightAnkle: pose.keypoints.find(k => k.name === 'right_ankle'),
+            };
+
+            // === 1. 下肢稳定性分析 (25分) ===
+            if (kp.leftKnee && kp.rightKnee && kp.leftHip && kp.rightHip && kp.leftAnkle && kp.rightAnkle) {
+                const kneeScore = analyzeKneeStability(kp);
+                scores.kneeStability = kneeScore;
+            } else {
+                scores.kneeStability = 15; // 数据不完整给基础分
+            }
+
+            // === 2. 躯干姿态分析 (25分) ===
+            if (kp.nose && kp.leftShoulder && kp.rightShoulder && kp.leftHip && kp.rightHip) {
+                const coreScore = analyzeCorePosture(kp);
+                scores.corePosture = coreScore;
+            } else {
+                scores.corePosture = 15;
+            }
+
+            // === 3. 上肢协调分析 (20分) ===
+            if (kp.leftShoulder && kp.rightShoulder && kp.leftElbow && kp.rightElbow && kp.leftWrist && kp.rightWrist) {
+                const armScore = analyzeArmCoordination(kp);
+                scores.armCoordination = armScore;
+            } else {
+                scores.armCoordination = 12;
+            }
+
+            // === 4. 重心平衡分析 (15分) ===
+            if (kp.leftShoulder && kp.rightShoulder && kp.leftHip && kp.rightHip) {
+                const balanceScore = analyzeBalanceCenter(kp);
+                scores.balanceCenter = balanceScore;
+            } else {
+                scores.balanceCenter = 10;
+            }
+
+            // === 5. 动作流畅度分析 (15分) ===
+            if (keypointsData && keypointsData.length > 1) {
+                scores.movementFlow = analyzeMovementFlow(keypointsData);
+            } else {
+                scores.movementFlow = 10;
+            }
+
+            // 计算总分
+            scores.total = scores.kneeStability + scores.corePosture + scores.armCoordination +
+                          scores.balanceCenter + scores.movementFlow;
+
+            return scores;
+        }
+
+        // 膝盖稳定性分析
+        function analyzeKneeStability(kp) {
+            const { leftKnee, rightKnee, leftHip, rightHip, leftAnkle, rightAnkle } = kp;
+
+            const avgHipY = (leftHip.y + rightHip.y) / 2;
+            const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
+            const avgAnkleY = (leftAnkle.y + rightAnkle.y) / 2;
+
+            const thighLength = avgHipY - avgKneeY;
+            const calfLength = avgKneeY - avgAnkleY;
+
+            // 理想比例：小腿略长于大腿
+            const proportion = calfLength / (thighLength + 0.1);
+            const kneeBendRatio = (avgHipY - avgKneeY) / 150;
+
+            let score = 0;
+
+            // 膝盖弯曲程度评估 (8分)
+            if (kneeBendRatio >= 0.35 && kneeBendRatio <= 0.6) {
+                score += 8; // 理想弯曲
+            } else if (kneeBendRatio >= 0.25 && kneeBendRatio <= 0.7) {
+                score += 5; // 轻微偏差
+            } else if (kneeBendRatio < 0.25) {
+                score += 2; // 膝盖过于伸直
+            } else {
+                score += 3; // 过度弯曲
+            }
+
+            // 膝盖位置评估 (9分)
+            const kneeOverAnkle = Math.abs((leftKnee.x + rightKnee.x) / 2 - (leftAnkle.x + rightAnkle.x) / 2);
+            const normalizedKneeOffset = kneeOverAnkle / 200;
+
+            if (normalizedKneeOffset <= 0.15) {
+                score += 9; // 膝盖在脚踝正上方
+            } else if (normalizedKneeOffset <= 0.3) {
+                score += 6; // 轻微前倾
+            } else {
+                score += 3; // 膝盖过度前倾
+            }
+
+            // 双腿对称性 (8分)
+            const leftKneeOffset = Math.abs(leftKnee.x - leftAnkle.x);
+            const rightKneeOffset = Math.abs(rightKnee.x - rightAnkle.x);
+            const symmetry = 1 - Math.abs(leftKneeOffset - rightKneeOffset) / 100;
+
+            score += Math.round(symmetry * 8);
+
+            return Math.min(score, 25);
+        }
+
+        // 躯干姿态分析
+        function analyzeCorePosture(kp) {
+            const { nose, leftShoulder, rightShoulder, leftHip, rightHip } = kp;
+
+            const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+            const avgHipY = (leftHip.y + rightHip.y) / 2;
+            const shoulderWidth = Math.abs(leftShoulder.x - rightShoulder.x);
+            const hipWidth = Math.abs(leftHip.x - rightHip.x);
+
+            // 躯干倾斜角度（像素估算）
+            const shoulderLeanX = (leftShoulder.x + rightShoulder.x) / 2;
+            const hipCenterX = (leftHip.x + rightHip.x) / 2;
+            const torsoLean = Math.abs(shoulderLeanX - hipCenterX);
+
+            let score = 0;
+
+            // 身体前倾评估 (8分)
+            const forwardLean = avgShoulderY - avgHipY;
+            if (forwardLean > 0 && forwardLean < 150) {
+                score += 8; // 正确的前倾
+            } else if (forwardLean <= 0) {
+                score += 3; // 后仰
+            } else {
+                score += 5; // 前倾过度
+            }
+
+            // 肩宽/髋宽比例 (7分)
+            const widthRatio = shoulderWidth / (hipWidth + 0.1);
+            if (widthRatio >= 1.1 && widthRatio <= 1.4) {
+                score += 7; // 理想比例
+            } else if (widthRatio < 1.1) {
+                score += 4; // 肩部过窄
+            } else {
+                score += 5; // 肩部过宽
+            }
+
+            // 躯干直立度 (10分)
+            const torsoVerticality = 1 - (torsoLean / 100);
+            score += Math.round(Math.max(0, torsoVerticality) * 10);
+
+            return Math.min(score, 25);
+        }
+
+        // 上肢协调性分析
+        function analyzeArmCoordination(kp) {
+            const { leftShoulder, rightShoulder, leftElbow, rightElbow, leftWrist, rightWrist, nose } = kp;
+
+            let score = 0;
+
+            // 手臂张开角度 (8分)
+            const leftArmAngle = calculateArmAngle(leftShoulder, leftElbow, leftWrist);
+            const rightArmAngle = calculateArmAngle(rightShoulder, rightElbow, rightWrist);
+            const avgArmAngle = (leftArmAngle + rightArmAngle) / 2;
+
+            if (avgArmAngle >= 70 && avgArmAngle <= 120) {
+                score += 8; // 理想角度
+            } else if (avgArmAngle >= 50 && avgArmAngle <= 150) {
+                score += 5; // 可接受范围
+            } else {
+                score += 2; // 角度异常
+            }
+
+            // 手臂对称性 (7分)
+            const leftArmLength = Math.hypot(leftWrist.x - leftShoulder.x, leftWrist.y - leftShoulder.y);
+            const rightArmLength = Math.hypot(rightWrist.x - rightShoulder.x, rightWrist.y - rightShoulder.y);
+            const symmetry = 1 - Math.abs(leftArmLength - rightArmLength) / Math.max(leftArmLength, rightArmLength);
+
+            score += Math.round(symmetry * 7);
+
+            // 手臂高度 (5分)
+            const noseY = nose.y;
+            const avgWristY = (leftWrist.y + rightWrist.y) / 2;
+
+            if (avgWristY < noseY && avgWristY > noseY - 100) {
+                score += 5; // 手臂高度合适
+            } else if (avgWristY >= noseY) {
+                score += 3; // 手臂过高
+            } else {
+                score += 4; // 手臂略低但可接受
+            }
+
+            return Math.min(score, 20);
+        }
+
+        // 计算手臂角度
+        function calculateArmAngle(shoulder, elbow, wrist) {
+            const v1 = { x: shoulder.x - elbow.x, y: shoulder.y - elbow.y };
+            const v2 = { x: wrist.x - elbow.x, y: wrist.y - elbow.y };
+
+            const dot = v1.x * v2.x + v1.y * v2.y;
+            const mag1 = Math.hypot(v1.x, v1.y);
+            const mag2 = Math.hypot(v2.x, v2.y);
+
+            const cosAngle = dot / (mag1 * mag2);
+            const angle = Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI);
+
+            return angle;
+        }
+
+        // 重心平衡分析
+        function analyzeBalanceCenter(kp) {
+            const { leftShoulder, rightShoulder, leftHip, rightHip, leftKnee, rightKnee } = kp;
+
+            // 身体中心点
+            const centerX = (leftShoulder.x + rightShoulder.x + leftHip.x + rightHip.x) / 4;
+            const centerY = (leftShoulder.y + rightShoulder.y + leftHip.y + rightHip.y) / 4;
+
+            // 左右平衡
+            const shoulderBalance = Math.abs(leftShoulder.x - rightShoulder.x);
+            const hipBalance = Math.abs(leftHip.x - rightHip.x);
+
+            let score = 0;
+
+            // 水平平衡 (8分)
+            const balanceRatio = 1 - Math.abs(shoulderBalance - hipBalance) / 200;
+            score += Math.round(Math.max(0, balanceRatio) * 8);
+
+            // 垂直重心位置 (7分)
+            const bodyWidth = Math.abs(leftShoulder.x - rightShoulder.x);
+            const bodyHeight = Math.abs(leftShoulder.y - leftHip.y);
+            const heightRatio = bodyWidth / (bodyHeight + 0.1);
+
+            if (heightRatio >= 0.5 && heightRatio <= 1.5) {
+                score += 7; // 重心位置理想
+            } else if (heightRatio < 0.5) {
+                score += 5; // 重心偏低
+            } else {
+                score += 4; // 重心偏高
+            }
+
+            return Math.min(score, 15);
+        }
+
+        // 动作流畅度分析
+        function analyzeMovementFlow(keypointsData) {
+            let totalStability = 0;
+            let frameCount = 0;
+
+            for (let i = 1; i < Math.min(keypointsData.length, 5); i++) {
+                const prev = keypointsData[i - 1];
+                const curr = keypointsData[i];
+
+                if (prev.keypoints && curr.keypoints) {
+                    const prevNose = prev.keypoints.find(k => k.name === 'nose');
+                    const currNose = curr.keypoints.find(k => k.name === 'nose');
+
+                    if (prevNose && currNose) {
+                        const movement = Math.hypot(currNose.x - prevNose.x, currNose.y - prevNose.y);
+                        // 合理的移动幅度（不太剧烈也不太平稳）
+                        if (movement > 2 && movement < 30) {
+                            totalStability += 3;
+                        } else {
+                            totalStability += 1;
+                        }
+                        frameCount++;
+                    }
+                }
+            }
+
+            if (frameCount === 0) return 10;
+
+            return Math.min(Math.round((totalStability / frameCount) * 5), 15);
+        }
+
+        // 生成详细反馈
+        function analyzePoseFeedback(pose, keypointsData) {
             const feedback = [];
-            const leftShoulder = pose.keypoints.find(kp => kp.name === 'left_shoulder');
-            const rightShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
-            const leftHip = pose.keypoints.find(kp => kp.name === 'left_hip');
-            const rightHip = pose.keypoints.find(kp => kp.name === 'right_hip');
-            const leftKnee = pose.keypoints.find(kp => kp.name === 'left_knee');
-            const rightKnee = pose.keypoints.find(kp => kp.name === 'right_knee');
+            const scores = calculateProfessionalScore(pose, keypointsData);
+
+            // 1. 下肢稳定性反馈
+            const { leftKnee, rightKnee, leftHip, rightHip, leftAnkle, rightAnkle } = pose.keypoints.reduce((acc, k) => {
+                acc[k.name] = k;
+                return acc;
+            }, {});
 
             if (leftKnee && rightKnee && leftHip && rightHip) {
-                // Check knee bend
                 const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
                 const avgHipY = (leftHip.y + rightHip.y) / 2;
-                const kneeBendRatio = (avgHipY - avgKneeY) / 200;
+                const kneeBendRatio = (avgHipY - avgKneeY) / 150;
 
-                if (kneeBendRatio < 0.3) {
+                if (kneeBendRatio < 0.25) {
                     feedback.push({
                         type: 'warning',
-                        title: '膝盖弯曲角度',
-                        desc: '建议增加膝盖弯曲程度，保持更好的缓冲姿态'
+                        dimension: '下肢稳定性',
+                        score: scores.kneeStability,
+                        title: '膝盖弯曲不足',
+                        desc: '膝盖弯曲角度偏小，建议增加弯曲程度。理想情况下，膝盖应弯曲到约90-110度，以提供更好的缓冲和操控性。'
+                    });
+                } else if (kneeBendRatio > 0.65) {
+                    feedback.push({
+                        type: 'info',
+                        dimension: '下肢稳定性',
+                        score: scores.kneeStability,
+                        title: '膝盖过度弯曲',
+                        desc: '膝盖弯曲过深可能导致力量传递效率降低。建议在保持灵活性的同时，找到适合当前速度的最佳弯曲角度。'
                     });
                 } else {
                     feedback.push({
                         type: 'success',
-                        title: '膝盖弯曲角度',
-                        desc: '膝盖弯曲适中，姿态稳定'
+                        dimension: '下肢稳定性',
+                        score: scores.kneeStability,
+                        title: '下肢姿态良好',
+                        desc: '膝盖弯曲角度适中，重心稳定。这是高质量滑雪/单板的基础姿态。'
                     });
                 }
             }
 
-            // Check arm position
-            const leftWrist = pose.keypoints.find(kp => kp.name === 'left_wrist');
-            const rightWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+            // 2. 躯干姿态反馈
+            const { nose, leftShoulder, rightShoulder, leftShoulder: ls, rightShoulder: rs } = pose.keypoints.reduce((acc, k) => {
+                acc[k.name] = k;
+                return acc;
+            }, {});
 
-            if (leftWrist && rightWrist) {
-                if (leftWrist.y > (leftShoulder?.y || 0) && rightWrist.y > (rightShoulder?.y || 0)) {
+            if (leftShoulder && rightShoulder && leftHip && rightHip && nose) {
+                const shoulderCenterX = (leftShoulder.x + rightShoulder.x) / 2;
+                const hipCenterX = (leftHip.x + rightHip.x) / 2;
+                const torsoLean = Math.abs(shoulderCenterX - hipCenterX);
+
+                if (torsoLean > 30) {
+                    feedback.push({
+                        type: 'warning',
+                        dimension: '躯干姿态',
+                        score: scores.corePosture,
+                        title: '躯干倾斜明显',
+                        desc: '身体有明显的侧倾或后仰趋势。建议加强核心肌群训练，保持躯干与雪面基本垂直，同时略向前倾。'
+                    });
+                } else if (torsoLean < 5) {
                     feedback.push({
                         type: 'success',
-                        title: '手臂位置',
-                        desc: '手臂位置平衡，有助于保持稳定'
+                        dimension: '躯干姿态',
+                        score: scores.corePosture,
+                        title: '躯干直立度优秀',
+                        desc: '躯干保持良好的直立姿态，这将有助于有效的力量传递和平衡控制。'
                     });
                 }
             }
 
-            return feedback.length > 0 ? feedback : [
-                { type: 'success', title: '整体姿态', desc: '姿态分析完成，建议参考改进建议进行练习' }
-            ];
-        }
+            // 3. 上肢协调反馈
+            const { leftElbow, rightElbow, leftWrist, rightWrist } = pose.keypoints.reduce((acc, k) => {
+                acc[k.name] = k;
+                return acc;
+            }, {});
 
-        function generateTips(score) {
-            if (currentSport === 'ski') {
-                return [
-                    '加强腿部力量训练',
-                    '练习深蹲动作增强平衡感',
-                    '注意保持背部挺直',
-                    '多进行转弯练习'
-                ];
-            } else {
-                return [
-                    '加强核心肌群训练',
-                    '多练习单板平衡基础动作',
-                    '注意肩膀与髋部的协调转动',
-                    '练习 J 型弯和 C 型弯'
-                ];
+            if (leftShoulder && rightShoulder && leftElbow && rightElbow && leftWrist && rightWrist) {
+                const leftAngle = calculateArmAngle(leftShoulder, leftElbow, leftWrist);
+                const rightAngle = calculateArmAngle(rightShoulder, rightElbow, rightWrist);
+                const avgAngle = (leftAngle + rightAngle) / 2;
+                const angleDiff = Math.abs(leftAngle - rightAngle);
+
+                if (angleDiff > 40) {
+                    feedback.push({
+                        type: 'warning',
+                        dimension: '上肢协调',
+                        score: scores.armCoordination,
+                        title: '双臂用力不均',
+                        desc: '左右手臂角度差异较大（' + Math.round(angleDiff) + '°），这会影响转弯的平衡性。建议加强非主导侧的手臂力量训练。'
+                    });
+                } else if (avgAngle < 50) {
+                    feedback.push({
+                        type: 'info',
+                        dimension: '上肢协调',
+                        score: scores.armCoordination,
+                        title: '手臂收拢较紧',
+                        desc: '手臂弯曲角度偏小。适当张开双臂有助于扩大支撑面，提高平衡稳定性。'
+                    });
+                } else if (avgAngle > 130) {
+                    feedback.push({
+                        type: 'info',
+                        dimension: '上肢协调',
+                        score: scores.armCoordination,
+                        title: '手臂伸展较大',
+                        desc: '双臂张开幅度良好，有助于保持平衡。注意保持肩膀放松，避免耸肩。'
+                    });
+                } else {
+                    feedback.push({
+                        type: 'success',
+                        dimension: '上肢协调',
+                        score: scores.armCoordination,
+                        title: '上肢协调性良好',
+                        desc: '双臂张开适度且对称，这将有助于在滑行中保持平衡和方向控制。'
+                    });
+                }
             }
+
+            // 4. 整体综合评价
+            if (scores.total >= 85) {
+                feedback.push({
+                    type: 'excellent',
+                    dimension: '综合评价',
+                    score: scores.total,
+                    title: '专业技术水平',
+                    desc: '您的姿态展现出了扎实的基本功。继续专注于细节打磨，您已具备向高级技术进阶的基础。'
+                });
+            } else if (scores.total >= 70) {
+                feedback.push({
+                    type: 'success',
+                    dimension: '综合评价',
+                    score: scores.total,
+                    title: '良好技术基础',
+                    desc: '整体姿态表现良好，但仍有提升空间。建议针对薄弱环节进行专项训练。'
+                });
+            } else if (scores.total >= 50) {
+                feedback.push({
+                    type: 'warning',
+                    dimension: '综合评价',
+                    score: scores.total,
+                    title: '需要系统训练',
+                    desc: '基础姿态尚需改进。建议从基础动作开始，系统练习各项技术要领。'
+                });
+            } else {
+                feedback.push({
+                    type: 'danger',
+                    dimension: '综合评价',
+                    score: scores.total,
+                    title: '建议从基础开始',
+                    desc: '建议在专业指导下进行基础训练，先建立正确的身体姿态意识。'
+                });
+            }
+
+            return feedback;
         }
 
-        function displayResults(score, feedback, tips) {
+        // 生成个性化训练建议
+        function generateTips(score, pose, keypointsData) {
+            const tips = [];
+            const { nose, leftShoulder, rightShoulder, leftKnee, rightKnee, leftHip, rightHip, leftAnkle, rightAnkle } = pose.keypoints.reduce((acc, k) => {
+                acc[k.name] = k;
+                return acc;
+            }, {});
+
+            // 基于评分推荐训练
+            if (score < 70) {
+                tips.push({
+                    priority: 'high',
+                    category: '基础训练',
+                    title: '低姿态深蹲练习',
+                    desc: '每天进行3组，每组15-20次的靠墙深蹲，专注于膝盖弯曲角度和重心控制。'
+                });
+
+                tips.push({
+                    priority: 'high',
+                    category: '平衡训练',
+                    title: '单腿站立平衡',
+                    desc: '每次保持30秒，每天练习5分钟，有效提升动态平衡能力。'
+                });
+            }
+
+            if (score < 85) {
+                tips.push({
+                    priority: 'medium',
+                    category: '专项训练',
+                    title: '核心稳定性训练',
+                    desc: '平板支撑、侧桥、死虫式等动作，每天10分钟，强化躯干控制能力。'
+                });
+
+                tips.push({
+                    priority: 'medium',
+                    category: '柔韧性',
+                    title: '髋关节灵活性',
+                    desc: '髋部屈肌和股四头肌拉伸，每天练习可改善膝盖弯曲幅度和前倾角度。'
+                });
+            }
+
+            // 根据运动类型提供专项建议
+            if (currentSport === 'ski') {
+                tips.push({
+                    priority: 'high',
+                    category: '双板专项',
+                    title: '上下身分离练习',
+                    desc: '滑行时保持下半身主导转向，上身朝向山下方向，这是高级技术的关键。'
+                });
+
+                tips.push({
+                    priority: 'medium',
+                    category: '双板专项',
+                    title: 'J型弯刻滑训练',
+                    desc: '专注于从横穿到直板的过渡阶段，保持刃角一致和重心稳定。'
+                });
+
+                tips.push({
+                    priority: 'low',
+                    category: '双板专项',
+                    title: '内刃外刃控制',
+                    desc: '练习左右刃的切换控制，感受不同刃角带来的速度变化和转向半径差异。'
+                });
+            } else {
+                tips.push({
+                    priority: 'high',
+                    category: '单板专项',
+                    title: '中心位置控制',
+                    desc: '后刃滑行时重心略偏后，前刃滑行时重心略偏前，始终保持板子的可控性。'
+                });
+
+                tips.push({
+                    priority: 'medium',
+                    category: '单板专项',
+                    title: 'C型弯与J型弯转换',
+                    desc: '熟练掌握两种弯型的节奏转换，C型弯适合中高级滑行，J型弯适合刻滑和高级技术。'
+                });
+
+                tips.push({
+                    priority: 'low',
+                    category: '单板专项',
+                    title: '肩胯对齐训练',
+                    desc: '滑行时注意肩膀与髋部的旋转一致性，避免过度扭转导致能量损失。'
+                });
+            }
+
+            // 基于具体姿态问题的个性化建议
+            if (leftKnee && rightKnee && leftAnkle && rightAnkle) {
+                const kneeOffset = Math.abs(leftKnee.x - leftAnkle.x) + Math.abs(rightKnee.x - rightAnkle.x);
+                if (kneeOffset > 100) {
+                    tips.push({
+                        priority: 'high',
+                        category: '姿态调整',
+                        title: '膝盖超伸纠正',
+                        desc: '注意避免膝盖锁定（超伸），这会导致缓冲能力下降和关节压力增大。保持微屈状态。'
+                    });
+                }
+            }
+
+            if (leftShoulder && rightShoulder && leftHip && rightHip) {
+                const shoulderCenterX = (leftShoulder.x + rightShoulder.x) / 2;
+                const hipCenterX = (leftHip.x + rightHip.x) / 2;
+                if (Math.abs(shoulderCenterX - hipCenterX) > 25) {
+                    tips.push({
+                        priority: 'medium',
+                        category: '姿态调整',
+                        title: '上半身扭转控制',
+                        desc: '滑行时上半身应保持稳定，避免过度扭转。专注于用下半身（髋和腿）控制方向。'
+                    });
+                }
+            }
+
+            return tips;
+        }
+
+        // 获取评分等级标签
+        function getScoreGrade(total) {
+            if (total >= 90) return { grade: 'S', label: '大师级', color: '#FFD700' };
+            if (total >= 85) return { grade: 'A', label: '优秀', color: '#10B981' };
+            if (total >= 75) return { grade: 'B', label: '良好', color: '#3B82F6' };
+            if (total >= 60) return { grade: 'C', label: '及格', color: '#F59E0B' };
+            if (total >= 45) return { grade: 'D', label: '待提升', color: '#EF4444' };
+            return { grade: 'F', label: '需加强', color: '#991B1B' };
+        }
+
+        function displayResults(scores, feedback, tips) {
             const resultsSection = document.getElementById('resultsSection');
             const feedbackList = document.getElementById('feedbackList');
             const tipsList = document.getElementById('tipsList');
@@ -2269,12 +3013,15 @@
             const scoreText = document.getElementById('scoreText');
             const scoreFill = document.getElementById('scoreFill');
 
+            const total = scores.total;
+            const gradeInfo = getScoreGrade(total);
+
             // Animate score
             let currentScore = 0;
             const scoreInterval = setInterval(() => {
                 currentScore += 2;
-                if (currentScore >= score) {
-                    currentScore = score;
+                if (currentScore >= total) {
+                    currentScore = total;
                     clearInterval(scoreInterval);
                 }
                 scoreBadge.textContent = currentScore + '分';
@@ -2282,21 +3029,90 @@
                 scoreFill.style.width = currentScore + '%';
             }, 30);
 
+            // 维度评分展示HTML
+            const dimensionHTML = `
+                <div class="dimension-scores">
+                    <div class="dimension-item">
+                        <span class="dim-label">下肢稳定性</span>
+                        <div class="dim-bar-wrap">
+                            <div class="dim-bar"><div class="dim-fill" style="width:${scores.kneeStability/25*100}%; background: ${scores.kneeStability >= 20 ? '#10B981' : scores.kneeStability >= 15 ? '#3B82F6' : '#F59E0B'}"></div></div>
+                        </div>
+                        <span class="dim-score">${scores.kneeStability}/25</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span class="dim-label">躯干姿态</span>
+                        <div class="dim-bar-wrap">
+                            <div class="dim-bar"><div class="dim-fill" style="width:${scores.corePosture/25*100}%; background: ${scores.corePosture >= 20 ? '#10B981' : scores.corePosture >= 15 ? '#3B82F6' : '#F59E0B'}"></div></div>
+                        </div>
+                        <span class="dim-score">${scores.corePosture}/25</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span class="dim-label">上肢协调</span>
+                        <div class="dim-bar-wrap">
+                            <div class="dim-bar"><div class="dim-fill" style="width:${scores.armCoordination/20*100}%; background: ${scores.armCoordination >= 16 ? '#10B981' : scores.armCoordination >= 12 ? '#3B82F6' : '#F59E0B'}"></div></div>
+                        </div>
+                        <span class="dim-score">${scores.armCoordination}/20</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span class="dim-label">重心平衡</span>
+                        <div class="dim-bar-wrap">
+                            <div class="dim-bar"><div class="dim-fill" style="width:${scores.balanceCenter/15*100}%; background: ${scores.balanceCenter >= 12 ? '#10B981' : scores.balanceCenter >= 8 ? '#3B82F6' : '#F59E0B'}"></div></div>
+                        </div>
+                        <span class="dim-score">${scores.balanceCenter}/15</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span class="dim-label">动作流畅度</span>
+                        <div class="dim-bar-wrap">
+                            <div class="dim-bar"><div class="dim-fill" style="width:${scores.movementFlow/15*100}%; background: ${scores.movementFlow >= 12 ? '#10B981' : scores.movementFlow >= 8 ? '#3B82F6' : '#F59E0B'}"></div></div>
+                        </div>
+                        <span class="dim-score">${scores.movementFlow}/15</span>
+                    </div>
+                </div>
+                <div class="grade-badge" style="border-color: ${gradeInfo.color}; color: ${gradeInfo.color};">
+                    <span class="grade-letter">${gradeInfo.grade}</span>
+                    <span class="grade-label">${gradeInfo.label}</span>
+                </div>
+            `;
+
             // Display feedback
             feedbackList.innerHTML = feedback.map(item => `
                 <li class="feedback-item">
                     <div class="feedback-icon ${item.type}">
-                        ${item.type === 'success' ? '✓' : item.type === 'warning' ? '!' : '↑'}
+                        ${item.type === 'excellent' ? '★' : item.type === 'success' ? '✓' : item.type === 'warning' ? '!' : item.type === 'info' ? '·' : '✗'}
                     </div>
                     <div class="feedback-content">
-                        <h4>${item.title}</h4>
+                        <div class="feedback-header">
+                            <h4>${item.title}</h4>
+                            <span class="feedback-dim">${item.dimension}</span>
+                            <span class="feedback-score">${item.score}分</span>
+                        </div>
                         <p>${item.desc}</p>
                     </div>
                 </li>
             `).join('');
 
-            // Display tips
-            tipsList.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+            // Display tips with priority
+            const priorityOrder = { high: 0, medium: 1, low: 2 };
+            tips.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+            tipsList.innerHTML = tips.map(tip => `
+                <li class="tip-item priority-${tip.priority}">
+                    <div class="tip-header">
+                        <span class="tip-category">${tip.category}</span>
+                        <span class="tip-priority ${tip.priority}">${tip.priority === 'high' ? '★★★ 重点' : tip.priority === 'medium' ? '★★☆ 建议' : '★☆☆ 参考'}</span>
+                    </div>
+                    <div class="tip-title">${tip.title}</div>
+                    <div class="tip-desc">${tip.desc}</div>
+                </li>
+            `).join('');
+
+            // 插入维度评分到页面
+            const existingDims = document.querySelector('.dimension-scores');
+            if (existingDims) existingDims.remove();
+            const existingGrade = document.querySelector('.grade-badge');
+            if (existingGrade) existingGrade.remove();
+
+            scoreBadge.insertAdjacentHTML('afterend', dimensionHTML);
 
             resultsSection.classList.add('active');
             analyzeBtn.innerHTML = `

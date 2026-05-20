@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShapeSki AI - 滑雪动作分析 | 单板双板评测</title>
+    <meta name="description" content="上传滑雪视频，体验 AI 动作分析。单板双板姿势评分，智能改进建议，随时随地提升滑雪技能。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- TensorFlow.js MoveNet -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1E3A5F;
+            --primary-light: #2D5A8B;
+            --accent: #00D4AA;
+            --accent-dark: #00B894;
+            --bg-light: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A1A2E;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --gold: #FFD700;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ========== SNOWFALL ========== */
+        .snowfall {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10px) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        /* ========== NAVIGATION ========== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-cta {
+            background: var(--accent);
+            color: var(--primary) !important;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        /* ========== HERO SECTION ========== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 2rem 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-text h1 span {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-text p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Pricing Badge */
+        .pricing-preview {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(0,212,170,0.1), rgba(30,58,95,0.1));
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--accent);
+        }
+
+        .pricing-preview span {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ========== ANALYSIS CARD ========== */
+        .analysis-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .analysis-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .analysis-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Sport Toggle */
+        .sport-toggle {
+            display: flex;
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .sport-toggle-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .sport-toggle-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .sport-toggle-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Paywall Overlay */
+        .paywall-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .paywall-overlay.active {
+            display: flex;
+        }
+
+        .paywall-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold), #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .paywall-overlay h3 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .paywall-overlay p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(0,212,170,0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(0,212,170,0.1);
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-icon svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        .upload-text {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-hint small {
+            display: block;
+            margin-top: 0.5rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        #videoInput {
+            display: none;
+        }
+
+        /* Video Preview */
+        .video-preview {
+            display: none;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .video-preview.active {
+            display: block;
+        }
+
+        .video-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #videoElement {
+            width: 100%;
+            max-height: 300px;
+            display: block;
+        }
+
+        #canvasElement {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .video-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .video-btn.primary {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .video-btn.secondary {
+            background: var(--bg-light);
+            color: var(--text-secondary);
+        }
+
+        .video-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        /* Analyze Button */
+        .analyze-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(30,58,95,0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========== RESULTS SECTION ========== */
+        .results-section {
+            display: none;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            margin-top: 1.5rem;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-header h3 {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .score-badge {
+            background: linear-gradient(135deg, var(--success), var(--accent));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        /* Score Bar */
+        .score-bar-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .score-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .score-bar {
+            height: 12px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--warning), var(--success));
+            border-radius: 6px;
+            transition: width 1s ease;
+        }
+
+        /* Feedback Items */
+        .feedback-list {
+            list-style: none;
+        }
+
+        .feedback-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+        }
+
+        .feedback-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .feedback-icon.success {
+            background: rgba(16,185,129,0.1);
+            color: var(--success);
+        }
+
+        .feedback-icon.warning {
+            background: rgba(245,158,11,0.1);
+            color: var(--warning);
+        }
+
+        .feedback-icon.improve {
+            background: rgba(239,68,68,0.1);
+            color: var(--danger);
+        }
+
+        .feedback-content h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .feedback-content p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tips Section */
+        .tips-section {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(0,212,170,0.1), rgba(30,58,95,0.1));
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .tips-section h4 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tips-section ul {
+            list-style: none;
+        }
+
+        .tips-section li {
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tips-section li::before {
+            content: '✓';
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* ========== PROCESSING OVERLAY ========== */
+        .processing-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(30,58,95,0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .processing-overlay.active {
+            display: flex;
+        }
+
+        .processing-spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            color: white;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .processing-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .processing-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* ========== PRICING SECTION ========== */
+        .pricing-section {
+            padding: 4rem 2rem;
+            background: white;
+        }
+
+        .pricing-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-content h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .pricing-content > p {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .pricing-card {
+            background: var(--bg-light);
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .pricing-card.featured {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .pricing-card.featured .pricing-price,
+        .pricing-card.featured .pricing-features li {
+            color: white;
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gold);
+            color: var(--primary);
+            padding: 4px 16px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .pricing-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .pricing-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pricing-btn.primary {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .pricing-btn.secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .pricing-btn:hover {
+            transform: scale(1.02);
+        }
+
+        /* ========== DEMO SECTION ========== */
+        .demo-section {
+            padding: 4rem 2rem;
+            background: var(--bg-light);
+        }
+
+        .demo-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .demo-content h2 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .demo-content p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .demo-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .demo-feature {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .demo-feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .demo-feature h3 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-feature p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        footer p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        /* ========== MODAL ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-light);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-method {
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .payment-method:hover {
+            border-color: var(--accent);
+        }
+
+        .payment-method.selected {
+            border-color: var(--accent);
+            background: rgba(0,212,170,0.1);
+        }
+
+        .payment-method img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-method span {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .order-summary {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .order-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+
+        .order-summary-row.total {
+            border-top: 1px solid var(--border);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .pay-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pay-btn:hover {
+            transform: scale(1.02);
+        }
+
+        /* ========== SUCCESS MODAL ========== */
+        .success-content {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--success), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+        }
+
+        .success-content h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .success-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .free-analysis-count {
+            background: linear-gradient(135deg, rgba(0,212,170,0.1), rgba(30,58,95,0.1));
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .free-analysis-count .count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .demo-features {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Snowfall -->
+    <div class="snowfall" id="snowfall"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-brand">
+            <svg viewBox="0 0 48 48" width="40" height="40">
+                <circle cx="24" cy="10" r="5" fill="#1E3A5F"/>
+                <path d="M24 15 L24 26" stroke="#1E3A5F" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M24 18 L18 24" stroke="#1E3A5F" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M24 18 L30 22" stroke="#1E3A5F" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M24 26 L20 38" stroke="#1E3A5F" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M24 26 L28 38" stroke="#1E3A5F" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M8 40 L40 40" stroke="#00D4AA" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            ShapeSki AI
+        </div>
+        <div class="nav-links">
+            <a href="#demo">功能演示</a>
+            <a href="#pricing">价格方案</a>
+            <a href="#" class="nav-cta" onclick="showPaymentModal()">开通会员</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>AI 智能滑雪<span>动作分析</span></h1>
+                <p>上传滑雪视频，AI 即时识别骨骼关键点，分析姿势标准度，给出专业改进建议。支持单板、双板两种模式。</p>
+                <div class="pricing-preview">
+                    <span>🎿 首次免费分析</span>
+                </div>
+            </div>
+
+            <!-- Analysis Card -->
+            <div class="analysis-card" id="analysisCard">
+                <div class="paywall-overlay" id="paywallOverlay">
+                    <div class="paywall-icon">👑</div>
+                    <h3>开通会员解锁全部功能</h3>
+                    <p>免费试用 1 次<br>会员无限次分析</p>
+                    <button class="pricing-btn primary" onclick="showPaymentModal()">
+                        立即开通 ¥29/月
+                    </button>
+                </div>
+
+                <div class="analysis-header">
+                    <h2>🎿 视频动作分析</h2>
+                    <p>上传 5-30 秒的滑雪视频</p>
+                </div>
+
+                <!-- Sport Toggle -->
+                <div class="sport-toggle">
+                    <button class="sport-toggle-btn active" data-sport="ski" onclick="toggleSport('ski')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="5" r="2"/>
+                            <path d="M12 7v6"/>
+                            <path d="M8 21l4-8 4 8"/>
+                            <path d="M6 17l6-2 6 2"/>
+                            <line x1="4" y1="20" x2="20" y2="20"/>
+                        </svg>
+                        <span>双板</span>
+                    </button>
+                    <button class="sport-toggle-btn" data-sport="snowboard" onclick="toggleSport('snowboard')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="10" width="16" height="4" rx="2"/>
+                            <circle cx="8" cy="8" r="2"/>
+                            <path d="M8 10v4"/>
+                            <path d="M12 14v4"/>
+                            <path d="M16 10v2"/>
+                        </svg>
+                        <span>单板</span>
+                    </button>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea" onclick="handleUploadClick()">
+                    <div class="upload-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <p class="upload-text">点击或拖拽上传视频</p>
+                    <p class="upload-hint">支持 MP4、MOV 格式，时长 5-30 秒
+                    <small>💡 手机端推荐：用微信选"压缩发送"可大幅减小文件</small></p>
+                    <input type="file" id="videoInput" accept="video/mp4,video/mov" onchange="handleVideoUpload(event)">
+                </div>
+
+                <!-- Video Preview -->
+                <div class="video-preview" id="videoPreview">
+                    <div class="video-container">
+                        <video id="videoElement" playsinline></video>
+                        <canvas id="canvasElement"></canvas>
+                    </div>
+                    <div class="video-controls">
+                        <button class="video-btn secondary" onclick="removeVideo()">删除视频</button>
+                        <button class="video-btn primary" onclick="startAnalysis()">开始分析 🎯</button>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section" id="resultsSection">
+                    <div class="results-header">
+                        <h3>📊 分析结果</h3>
+                        <div class="score-badge" id="scoreBadge">85分</div>
+                    </div>
+
+                    <div class="score-bar-container">
+                        <div class="score-label">
+                            <span>综合评分</span>
+                            <span id="scoreText">85/100</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" id="scoreFill" style="width: 85%"></div>
+                        </div>
+                    </div>
+
+                    <ul class="feedback-list" id="feedbackList">
+                        <!-- Feedback items will be inserted here -->
+                    </ul>
+
+                    <div class="tips-section">
+                        <h4>💡 改进建议</h4>
+                        <ul id="tipsList">
+                            <!-- Tips will be inserted here -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Analyze Button -->
+                <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    上传视频开始分析
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section class="demo-section" id="demo">
+        <div class="demo-content">
+            <h2>🚀 核心技术</h2>
+            <p>基于 TensorFlow.js MoveNet 实时姿态检测，完全本地运行，保护隐私</p>
+
+            <div class="demo-features">
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="none">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+                    <h3>实时处理</h3>
+                    <p>TensorFlow.js 本地运行，无需上传服务器，分析速度快</p>
+                </div>
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="none">
+                            <circle cx="12" cy="12" r="10"/>
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+                        </svg>
+                    </div>
+                    <h3>17 关键点</h3>
+                    <p>精准识别身体 17 个骨骼关键点，专业滑雪姿态分析</p>
+                </div>
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="none">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/>
+                            <path d="M7 11V7a5 5 0 0110 0v4"/>
+                        </svg>
+                    </div>
+                    <h3>隐私保护</h3>
+                    <p>视频仅在本地处理，不上传服务器，数据安全有保障</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section" id="pricing">
+        <div class="pricing-content">
+            <h2>💰 价格方案</h2>
+            <p>选择适合你的分析套餐</p>
+
+            <div class="pricing-cards">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-name">免费试用</div>
+                    <div class="pricing-desc">体验 AI 分析功能</div>
+                    <div class="pricing-price">¥0<span>/次</span></div>
+                    <ul class="pricing-features">
+                        <li>1 次免费视频分析</li>
+                        <li>基础评分报告</li>
+                        <li>3 条改进建议</li>
+                        <li>单板/双板模式切换</li>
+                    </ul>
+                    <button class="pricing-btn secondary" onclick="handleUploadClick()">立即体验</button>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">最受欢迎</div>
+                    <div class="pricing-name">月度会员</div>
+                    <div class="pricing-desc">无限次分析，完整报告</div>
+                    <div class="pricing-price">¥29<span>/月</span></div>
+                    <ul class="pricing-features">
+                        <li>无限次视频分析</li>
+                        <li>详细评分报告</li>
+                        <li>10 条改进建议</li>
+                        <li>历史记录保存</li>
+                        <li>优先技术支持</li>
+                    </ul>
+                    <button class="pricing-btn primary" onclick="showPaymentModal('pro')">开通会员</button>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-name">年度会员</div>
+                    <div class="pricing-desc">滑雪学校/教练首选</div>
+                    <div class="pricing-price">¥199<span>/年</span></div>
+                    <ul class="pricing-features">
+                        <li>所有月度会员功能</li>
+                        <li>多学员管理</li>
+                        <li>批量视频分析</li>
+                        <li>自定义训练计划</li>
+                        <li>专属企业客服</li>
+                    </ul>
+                    <button class="pricing-btn secondary" onclick="showPaymentModal('annual')">联系我们</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2024 ShapeSki AI - AI 驱动的滑雪动作分析平台 | friendly farm</p>
+    </footer>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-spinner"></div>
+        <div class="processing-text">
+            <p id="processingStatus">正在加载 AI 模型...</p>
+        </div>
+        <div class="processing-progress">
+            <div class="processing-bar" id="processingBar"></div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>开通会员</h3>
+                <button class="modal-close" onclick="closePaymentModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="order-summary">
+                    <div class="order-summary-row">
+                        <span>月度会员</span>
+                        <span id="modalPrice">¥29/月</span>
+                    </div>
+                    <div class="order-summary-row total">
+                        <span>合计</span>
+                        <span id="modalTotal">¥29</span>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">选择支付方式</p>
+                <div class="payment-methods">
+                    <div class="payment-method selected" onclick="selectPayment(this, 'wechat')">
+                        <div style="font-size: 2rem;">💚</div>
+                        <span>微信支付</span>
+                    </div>
+                    <div class="payment-method" onclick="selectPayment(this, 'alipay')">
+                        <div style="font-size: 2rem;">🔵</div>
+                        <span>支付宝</span>
+                    </div>
+                </div>
+
+                <button class="pay-btn" onclick="processPayment()">
+                    确认支付 ¥29
+                </button>
+
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
+                    支付即表示同意《会员服务协议》
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal">
+            <div class="modal-body">
+                <div class="success-content">
+                    <div class="success-icon">✓</div>
+                    <h3>开通成功！</h3>
+                    <p>欢迎成为 ShapeSki AI 会员</p>
+                    <div class="free-analysis-count">
+                        <div class="count" id="analysisCount">∞</div>
+                        <div>剩余分析次数</div>
+                    </div>
+                    <button class="pay-btn" onclick="closeSuccessModal()">
+                        开始分析 🎿
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== SNOWFALL EFFECT ==========
+        function createSnowfall() {
+            const snowfall = document.getElementById('snowfall');
+            const snowflakeCount = 30;
+
+            for (let i = 0; i < snowflakeCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.innerHTML = '❄';
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.fontSize = (Math.random() * 10 + 8) + 'px';
+                snowflake.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                snowflake.style.animationDelay = (Math.random() * 10) + 's';
+                snowfall.appendChild(snowflake);
+            }
+        }
+        createSnowfall();
+
+        // ========== GLOBAL VARIABLES ==========
+        let currentSport = 'ski';
+        let videoFile = null;
+        let isAnalyzing = false;
+        let detector = null;
+        let freeAnalysisLeft = localStorage.getItem('freeAnalysis') !== 'used' ? 1 : 0;
+        let isMember = localStorage.getItem('isMember') === 'true';
+
+        // ========== INITIALIZE TENSORFLOW.JS ==========
+        async function initTensorFlow() {
+            showProcessing('正在加载 AI 模型...', 10);
+
+            try {
+                showProcessing('正在初始化 TensorFlow.js...', 30);
+                await tf.ready();
+
+                showProcessing('正在加载 MoveNet 模型...', 50);
+                const model = poseDetection.SupportedModels.MoveNet;
+                const detectorConfig = {
+                    modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+                    enableSmoothing: true
+                };
+
+                detector = await poseDetection.createDetector(model, detectorConfig);
+                showProcessing('模型加载完成！', 100);
+                setTimeout(hideProcessing, 500);
+
+                console.log('✅ TensorFlow.js MoveNet initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize TensorFlow.js:', error);
+                showProcessing('模型加载失败，使用演示模式', 100);
+                setTimeout(hideProcessing, 1000);
+            }
+        }
+
+        // Initialize on page load
+        initTensorFlow();
+
+        // ========== SPORT TOGGLE ==========
+        function toggleSport(sport) {
+            currentSport = sport;
+            document.querySelectorAll('.sport-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.sport === sport);
+            });
+        }
+
+        // ========== UPLOAD HANDLING ==========
+        function handleUploadClick() {
+            if (!isMember && freeAnalysisLeft <= 0) {
+                showPaymentModal();
+                return;
+            }
+            document.getElementById('videoInput').click();
+        }
+
+        const uploadArea = document.getElementById('uploadArea');
+        const videoInput = document.getElementById('videoInput');
+        const videoPreview = document.getElementById('videoPreview');
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('canvasElement');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            if (!isMember && freeAnalysisLeft <= 0) {
+                showPaymentModal();
+                return;
+            }
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('video/')) {
+                handleVideoFile(files[0]);
+            }
+        });
+
+        function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleVideoFile(file);
+            }
+        }
+
+        function handleVideoFile(file) {
+            // 100MB limit for mobile videos
+            if (file.size > 100 * 1024 * 1024) {
+                alert('视频文件过大，请选择小于 100MB 的视频，或使用微信"压缩发送"功能');
+                return;
+            }
+
+            videoFile = file;
+            showProcessing('正在处理视频...', 10);
+
+            const url = URL.createObjectURL(file);
+            videoElement.src = url;
+            videoElement.load();
+
+            videoElement.onloadedmetadata = () => {
+                if (videoElement.duration > 30) {
+                    alert('视频时长不能超过 30 秒，请重新选择');
+                    removeVideo();
+                    hideProcessing();
+                    return;
+                }
+
+                // Auto compress if needed
+                const compressVideo = async () => {
+                    const maxWidth = 720;
+                    const maxHeight = 1280;
+                    const videoWidth = videoElement.videoWidth;
+                    const videoHeight = videoElement.videoHeight;
+
+                    // Only compress if too large
+                    if (videoWidth > maxWidth || videoHeight > maxHeight || file.size > 20 * 1024 * 1024) {
+                        showProcessing('正在压缩视频...', 30);
+                        const compressedBlob = await compressVideoBlob(videoElement, maxWidth, maxHeight);
+                        if (compressedBlob) {
+                            videoFile = compressedBlob;
+                            const newUrl = URL.createObjectURL(compressedBlob);
+                            videoElement.src = newUrl;
+                            await new Promise(resolve => {
+                                videoElement.onloadedmetadata = resolve;
+                            });
+                        }
+                    }
+                    hideProcessing();
+                };
+
+                compressVideo();
+
+                uploadArea.style.display = 'none';
+                videoPreview.classList.add('active');
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    开始 AI 分析
+                `;
+            };
+        }
+
+        // Video compression function
+        async function compressVideoBlob(videoEl, maxWidth, maxHeight) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                let width = videoEl.videoWidth;
+                let height = videoEl.videoHeight;
+
+                // Calculate new dimensions
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const stream = canvas.captureStream(30);
+                const mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp9'
+                });
+                const chunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    if (chunks.length > 0) {
+                        const blob = new Blob(chunks, { type: 'video/webm' });
+                        resolve(blob);
+                    } else {
+                        resolve(null);
+                    }
+                };
+
+                videoEl.currentTime = 0;
+                videoEl.play();
+
+                const drawFrame = () => {
+                    if (videoEl.paused || videoEl.ended) {
+                        mediaRecorder.stop();
+                        return;
+                    }
+                    ctx.drawImage(videoEl, 0, 0, width, height);
+                    requestAnimationFrame(drawFrame);
+                };
+
+                mediaRecorder.start();
+                drawFrame();
+            });
+        }
+
+        function removeVideo() {
+            videoFile = null;
+            videoElement.src = '';
+            uploadArea.style.display = 'block';
+            videoPreview.classList.remove('active');
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = `
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                上传视频开始分析
+            `;
+            document.getElementById('resultsSection').classList.remove('active');
+        }
+
+        // ========== AI ANALYSIS WITH MOVENET ==========
+        function showProcessing(status, progress) {
+            const overlay = document.getElementById('processingOverlay');
+            const statusEl = document.getElementById('processingStatus');
+            const barEl = document.getElementById('processingBar');
+
+            overlay.classList.add('active');
+            statusEl.textContent = status;
+            barEl.style.width = progress + '%';
+        }
+
+        function hideProcessing() {
+            document.getElementById('processingOverlay').classList.remove('active');
+        }
+
+        async function startAnalysis() {
+            if (!videoFile || isAnalyzing) return;
+
+            isAnalyzing = true;
+            showProcessing('正在准备分析...', 10);
+
+            try {
+                videoElement.currentTime = 0;
+                videoElement.pause();
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = videoElement.videoWidth || 640;
+                canvas.height = videoElement.videoHeight || 480;
+
+                const ctx2d = canvasElement.getContext('2d');
+                canvasElement.width = videoElement.videoWidth || 640;
+                canvasElement.height = videoElement.videoHeight || 480;
+
+                keypointsData = [];
+                let frameCount = 0;
+                const totalFrames = 10; // Faster for demo
+
+                showProcessing('正在分析视频帧...', 20);
+
+                const analyzeFrame = async () => {
+                    if (frameCount >= totalFrames || videoElement.ended) {
+                        // Analysis complete
+                        showProcessing('生成分析报告...', 90);
+
+                        // Use real pose data if available
+                        let score = 75;
+                        let feedback = [];
+                        let tips = [];
+
+                        if (keypointsData.length > 0 && detector) {
+                            // Calculate score based on actual pose data
+                            const avgConfidence = keypointsData.reduce((sum, kp) => sum + kp.confidence, 0) / keypointsData.length;
+                            score = Math.round(60 + avgConfidence * 40);
+
+                            // Generate feedback based on pose
+                            const latestPose = keypointsData[keypointsData.length - 1];
+                            feedback = analyzePoseFeedback(latestPose);
+                            tips = generateTips(score);
+                        }
+
+                        displayResults(score, feedback, tips);
+
+                        setTimeout(() => {
+                            hideProcessing();
+                            isAnalyzing = false;
+
+                            // Mark free analysis as used
+                            if (!isMember && freeAnalysisLeft > 0) {
+                                localStorage.setItem('freeAnalysis', 'used');
+                                freeAnalysisLeft = 0;
+                                updatePaywall();
+                            }
+                        }, 500);
+                        return;
+                    }
+
+                    // Draw current video frame
+                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+                    // Try to detect pose with MoveNet
+                    if (detector && frameCount % 2 === 0) { // Every 2nd frame for performance
+                        try {
+                            const poses = await detector.estimatePoses(videoElement);
+                            if (poses.length > 0) {
+                                const pose = poses[0];
+                                // Store keypoints with confidence
+                                pose.keypoints.forEach(kp => {
+                                    keypointsData.push({
+                                        name: kp.name,
+                                        x: kp.x,
+                                        y: kp.y,
+                                        confidence: kp.score || 0
+                                    });
+                                });
+
+                                // Draw real skeleton
+                                drawRealSkeleton(ctx2d, canvasElement.width, canvasElement.height, pose);
+                            }
+                        } catch (e) {
+                            // Fallback to demo skeleton
+                            drawDemoSkeleton(ctx2d, canvasElement.width, canvasElement.height, frameCount);
+                        }
+                    } else {
+                        // Demo skeleton
+                        drawDemoSkeleton(ctx2d, canvasElement.width, canvasElement.height, frameCount);
+                    }
+
+                    frameCount++;
+                    const progress = 20 + (frameCount / totalFrames) * 70;
+                    showProcessing(`正在分析第 ${frameCount}/${totalFrames} 帧...`, progress);
+
+                    // Advance video slightly
+                    videoElement.currentTime += videoElement.duration / totalFrames;
+
+                    // Faster delay between frames
+                    await new Promise(r => setTimeout(r, 100));
+                    analyzeFrame();
+                };
+
+                videoElement.play();
+                analyzeFrame();
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                alert('分析过程出现错误，请重试');
+                hideProcessing();
+                isAnalyzing = false;
+            }
+        }
+
+        // Draw real skeleton from MoveNet
+        function drawRealSkeleton(ctx, width, height, pose) {
+            ctx.clearRect(0, 0, width, height);
+
+            // Define connections
+            const connections = [
+                ['left_ear', 'left_eye'], ['left_eye', 'nose'],
+                ['right_ear', 'right_eye'], ['right_eye', 'nose'],
+                ['left_shoulder', 'right_shoulder'],
+                ['left_shoulder', 'left_elbow'], ['left_elbow', 'left_wrist'],
+                ['right_shoulder', 'right_elbow'], ['right_elbow', 'right_wrist'],
+                ['left_shoulder', 'left_hip'], ['right_shoulder', 'right_hip'],
+                ['left_hip', 'right_hip'],
+                ['left_hip', 'left_knee'], ['left_knee', 'left_ankle'],
+                ['right_hip', 'right_knee'], ['right_knee', 'right_ankle']
+            ];
+
+            ctx.strokeStyle = '#00D4AA';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.shadowColor = '#00D4AA';
+            ctx.shadowBlur = 8;
+
+            // Draw connections
+            connections.forEach(([a, b]) => {
+                const kpA = pose.keypoints.find(kp => kp.name === a);
+                const kpB = pose.keypoints.find(kp => kp.name === b);
+
+                if (kpA && kpB && kpA.score > 0.3 && kpB.score > 0.3) {
+                    ctx.beginPath();
+                    ctx.moveTo(kpA.x, kpA.y);
+                    ctx.lineTo(kpB.x, kpB.y);
+                    ctx.stroke();
+                }
+            });
+
+            // Draw keypoints
+            ctx.fillStyle = '#00D4AA';
+            pose.keypoints.forEach(kp => {
+                if (kp.score > 0.3) {
+                    ctx.beginPath();
+                    ctx.arc(kp.x, kp.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            ctx.shadowBlur = 0;
+        }
+
+        // Draw demo skeleton
+        function drawDemoSkeleton(ctx, width, height, frame) {
+            ctx.clearRect(0, 0, width, height);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = Math.min(width, height) / 3;
+
+            // Animated skeleton with skiing pose
+            const lean = Math.sin(frame * 0.2) * 10;
+            const kneeBend = Math.abs(Math.sin(frame * 0.3)) * 20;
+
+            ctx.strokeStyle = '#00D4AA';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.shadowColor = '#00D4AA';
+            ctx.shadowBlur = 10;
+
+            // Head
+            ctx.beginPath();
+            ctx.arc(centerX + lean, centerY - scale * 0.8, scale * 0.12, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Body
+            ctx.beginPath();
+            ctx.moveTo(centerX + lean, centerY - scale * 0.65);
+            ctx.lineTo(centerX + lean * 0.5, centerY - scale * 0.1);
+            ctx.stroke();
+
+            // Arms
+            ctx.beginPath();
+            ctx.moveTo(centerX + lean - scale * 0.4, centerY - scale * 0.35);
+            ctx.lineTo(centerX + lean * 0.5, centerY - scale * 0.45);
+            ctx.lineTo(centerX + lean + scale * 0.4, centerY - scale * 0.3);
+            ctx.stroke();
+
+            // Legs
+            const legBend = kneeBend;
+            ctx.beginPath();
+            ctx.moveTo(centerX + lean * 0.5, centerY - scale * 0.1);
+            ctx.lineTo(centerX + lean * 0.3 - legBend * 0.5, centerY + scale * 0.3);
+            ctx.lineTo(centerX + lean * 0.2 - legBend, centerY + scale * 0.7);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(centerX + lean * 0.5, centerY - scale * 0.1);
+            ctx.lineTo(centerX + lean * 0.7 + legBend * 0.5, centerY + scale * 0.3);
+            ctx.lineTo(centerX + lean * 0.8 + legBend, centerY + scale * 0.7);
+            ctx.stroke();
+
+            // Key joints
+            ctx.fillStyle = '#00D4AA';
+            const joints = [
+                [centerX + lean, centerY - scale * 0.8],
+                [centerX + lean * 0.5, centerY - scale * 0.45],
+                [centerX + lean * 0.5, centerY - scale * 0.1],
+            ];
+            joints.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 0;
+        }
+
+        // Analyze pose and generate feedback
+        function analyzePoseFeedback(pose) {
+            const feedback = [];
+            const leftShoulder = pose.keypoints.find(kp => kp.name === 'left_shoulder');
+            const rightShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+            const leftHip = pose.keypoints.find(kp => kp.name === 'left_hip');
+            const rightHip = pose.keypoints.find(kp => kp.name === 'right_hip');
+            const leftKnee = pose.keypoints.find(kp => kp.name === 'left_knee');
+            const rightKnee = pose.keypoints.find(kp => kp.name === 'right_knee');
+
+            if (leftKnee && rightKnee && leftHip && rightHip) {
+                // Check knee bend
+                const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
+                const avgHipY = (leftHip.y + rightHip.y) / 2;
+                const kneeBendRatio = (avgHipY - avgKneeY) / 200;
+
+                if (kneeBendRatio < 0.3) {
+                    feedback.push({
+                        type: 'warning',
+                        title: '膝盖弯曲角度',
+                        desc: '建议增加膝盖弯曲程度，保持更好的缓冲姿态'
+                    });
+                } else {
+                    feedback.push({
+                        type: 'success',
+                        title: '膝盖弯曲角度',
+                        desc: '膝盖弯曲适中，姿态稳定'
+                    });
+                }
+            }
+
+            // Check arm position
+            const leftWrist = pose.keypoints.find(kp => kp.name === 'left_wrist');
+            const rightWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+
+            if (leftWrist && rightWrist) {
+                if (leftWrist.y > (leftShoulder?.y || 0) && rightWrist.y > (rightShoulder?.y || 0)) {
+                    feedback.push({
+                        type: 'success',
+                        title: '手臂位置',
+                        desc: '手臂位置平衡，有助于保持稳定'
+                    });
+                }
+            }
+
+            return feedback.length > 0 ? feedback : [
+                { type: 'success', title: '整体姿态', desc: '姿态分析完成，建议参考改进建议进行练习' }
+            ];
+        }
+
+        function generateTips(score) {
+            if (currentSport === 'ski') {
+                return [
+                    '加强腿部力量训练',
+                    '练习深蹲动作增强平衡感',
+                    '注意保持背部挺直',
+                    '多进行转弯练习'
+                ];
+            } else {
+                return [
+                    '加强核心肌群训练',
+                    '多练习单板平衡基础动作',
+                    '注意肩膀与髋部的协调转动',
+                    '练习 J 型弯和 C 型弯'
+                ];
+            }
+        }
+
+        function displayResults(score, feedback, tips) {
+            const resultsSection = document.getElementById('resultsSection');
+            const feedbackList = document.getElementById('feedbackList');
+            const tipsList = document.getElementById('tipsList');
+            const scoreBadge = document.getElementById('scoreBadge');
+            const scoreText = document.getElementById('scoreText');
+            const scoreFill = document.getElementById('scoreFill');
+
+            // Animate score
+            let currentScore = 0;
+            const scoreInterval = setInterval(() => {
+                currentScore += 2;
+                if (currentScore >= score) {
+                    currentScore = score;
+                    clearInterval(scoreInterval);
+                }
+                scoreBadge.textContent = currentScore + '分';
+                scoreText.textContent = currentScore + '/100';
+                scoreFill.style.width = currentScore + '%';
+            }, 30);
+
+            // Display feedback
+            feedbackList.innerHTML = feedback.map(item => `
+                <li class="feedback-item">
+                    <div class="feedback-icon ${item.type}">
+                        ${item.type === 'success' ? '✓' : item.type === 'warning' ? '!' : '↑'}
+                    </div>
+                    <div class="feedback-content">
+                        <h4>${item.title}</h4>
+                        <p>${item.desc}</p>
+                    </div>
+                </li>
+            `).join('');
+
+            // Display tips
+            tipsList.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+
+            resultsSection.classList.add('active');
+            analyzeBtn.innerHTML = `
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                </svg>
+                重新分析
+            `;
+        }
+
+        // ========== PAYMENT SYSTEM ==========
+        let selectedPlan = 'pro';
+        let selectedPayment = 'wechat';
+
+        function updatePaywall() {
+            const paywall = document.getElementById('paywallOverlay');
+            if (isMember) {
+                paywall.classList.remove('active');
+            } else if (freeAnalysisLeft <= 0) {
+                paywall.classList.add('active');
+            } else {
+                paywall.classList.remove('active');
+            }
+        }
+
+        function showPaymentModal(plan = 'pro') {
+            selectedPlan = plan;
+
+            const modal = document.getElementById('paymentModal');
+            const priceEl = document.getElementById('modalPrice');
+            const totalEl = document.getElementById('modalTotal');
+            const payBtn = document.querySelector('.pay-btn');
+
+            if (plan === 'pro') {
+                priceEl.textContent = '¥29/月';
+                totalEl.textContent = '¥29';
+                payBtn.textContent = '确认支付 ¥29';
+            } else if (plan === 'annual') {
+                priceEl.textContent = '¥199/年';
+                totalEl.textContent = '¥199';
+                payBtn.textContent = '确认支付 ¥199';
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+        }
+
+        function selectPayment(element, method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        function processPayment() {
+            // Simulate payment processing
+            showProcessing('正在处理支付...', 50);
+
+            setTimeout(() => {
+                showProcessing('支付成功！', 100);
+
+                setTimeout(() => {
+                    hideProcessing();
+                    closePaymentModal();
+
+                    // Activate membership
+                    isMember = true;
+                    localStorage.setItem('isMember', 'true');
+                    updatePaywall();
+
+                    // Show success modal
+                    document.getElementById('successModal').classList.add('active');
+                }, 500);
+            }, 1000);
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        // Initialize paywall state
+        updatePaywall();
+
+        // ========== SCROLL FUNCTIONS ==========
+        function scrollToAnalysis() {
+            document.getElementById('analysisCard').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

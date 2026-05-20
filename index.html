@@ -1577,6 +1577,7 @@
         let detector = null;
         let freeAnalysisLeft = localStorage.getItem('freeAnalysis') !== 'used' ? 1 : 0;
         let isMember = localStorage.getItem('isMember') === 'true';
+        let isVideoReady = false; // 确保视频元数据加载完成
 
         // ========== ACTIVATION CODE SYSTEM ==========
         // 预设激活码列表（可自定义）
@@ -1781,6 +1782,11 @@
             videoElement.src = url;
             videoElement.load();
 
+            // 防止视频太小导致 onloadedmetadata 在监听器注册前触发
+            if (videoElement.readyState >= 1) {
+                isVideoReady = true;
+            }
+
             videoElement.onloadedmetadata = () => {
                 if (videoElement.duration > 30) {
                     alert('视频时长不能超过 30 秒，请重新选择');
@@ -1805,9 +1811,16 @@
                             const newUrl = URL.createObjectURL(compressedBlob);
                             videoElement.src = newUrl;
                             await new Promise(resolve => {
-                                videoElement.onloadedmetadata = resolve;
+                                videoElement.onloadedmetadata = () => {
+                                    isVideoReady = true;
+                                    resolve();
+                                };
                             });
+                        } else {
+                            isVideoReady = true;
                         }
+                    } else {
+                        isVideoReady = true;
                     }
                     hideProcessing();
                 };
@@ -1816,14 +1829,27 @@
 
                 uploadArea.style.display = 'none';
                 videoPreview.classList.add('active');
-                analyzeBtn.disabled = false;
+                // 按钮初始禁用，等视频真正就绪后再启用
+                analyzeBtn.disabled = true;
                 analyzeBtn.innerHTML = `
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="m21 21-4.35-4.35"/>
                     </svg>
-                    开始 AI 分析
+                    视频加载中...
                 `;
+
+                // 等 compressVideo 完成后再启用按钮
+                compressVideo().then(() => {
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.innerHTML = `
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        开始 AI 分析
+                    `;
+                });
             };
         }
 
@@ -1891,6 +1917,7 @@
         function removeVideo() {
             videoFile = null;
             videoElement.src = '';
+            isVideoReady = false;
             uploadArea.style.display = 'block';
             videoPreview.classList.remove('active');
             analyzeBtn.disabled = true;
@@ -1922,10 +1949,34 @@
         async function startAnalysis() {
             if (!videoFile || isAnalyzing) return;
 
+            // 检查视频是否准备就绪（双重保险：isVideoReady + readyState）
+            if (!isVideoReady || !videoElement.duration || isNaN(videoElement.duration) || videoElement.readyState < 1) {
+                showProcessing('视频加载中，请稍候...', 50);
+                await new Promise(resolve => {
+                    const checkReady = setInterval(() => {
+                        if ((isVideoReady || videoElement.readyState >= 1) && videoElement.duration && !isNaN(videoElement.duration)) {
+                            clearInterval(checkReady);
+                            resolve();
+                        }
+                    }, 100);
+                    setTimeout(() => {
+                        clearInterval(checkReady);
+                        resolve();
+                    }, 10000);
+                });
+            }
+
+            if (!videoElement.duration || isNaN(videoElement.duration)) {
+                alert('视频加载失败，请重新上传');
+                hideProcessing();
+                return;
+            }
+
             isAnalyzing = true;
             showProcessing('正在准备分析...', 10);
 
             try {
+                const videoDuration = videoElement.duration;
                 videoElement.currentTime = 0;
                 videoElement.pause();
 
@@ -1940,29 +1991,25 @@
 
                 keypointsData = [];
                 let frameCount = 0;
-                const totalFrames = 10; // Faster for demo
+                const totalFrames = 10;
 
                 showProcessing('正在分析视频帧...', 20);
 
                 const analyzeFrame = async () => {
-                    if (frameCount >= totalFrames || videoElement.ended) {
-                        // Analysis complete
+                    // 关键修复：不再依赖 videoElement.ended，只用 frameCount 判断
+                    if (frameCount >= totalFrames) {
+                        // 分析完成
                         showProcessing('生成分析报告...', 90);
 
-                        // Use real pose data if available
                         let score = 75;
                         let feedback = [];
                         let tips = [];
 
                         if (keypointsData.length > 0 && detector) {
                             try {
-                                // Get latest pose
                                 const latestPose = keypointsData[keypointsData.length - 1];
-                                // Calculate score based on actual pose data
                                 const avgConfidence = latestPose.keypoints.reduce((sum, kp) => sum + (kp.score || 0), 0) / latestPose.keypoints.length;
                                 score = Math.round(60 + avgConfidence * 40);
-
-                                // Generate feedback based on pose
                                 feedback = analyzePoseFeedback(latestPose);
                                 tips = generateTips(score);
                             } catch (e) {
@@ -1979,7 +2026,6 @@
                             hideProcessing();
                             isAnalyzing = false;
 
-                            // Mark free analysis as used
                             if (!isMember && freeAnalysisLeft > 0) {
                                 localStorage.setItem('freeAnalysis', 'used');
                                 freeAnalysisLeft = 0;
@@ -1993,23 +2039,18 @@
                     ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
                     // Try to detect pose with MoveNet
-                    if (detector && frameCount % 2 === 0) { // Every 2nd frame for performance
+                    if (detector && frameCount % 2 === 0) {
                         try {
                             const poses = await detector.estimatePoses(videoElement);
                             if (poses.length > 0) {
                                 const pose = poses[0];
-                                // Store complete pose for this frame
                                 keypointsData.push(pose);
-
-                                // Draw real skeleton
                                 drawRealSkeleton(ctx2d, canvasElement.width, canvasElement.height, pose);
                             }
                         } catch (e) {
-                            // Fallback to demo skeleton
                             drawDemoSkeleton(ctx2d, canvasElement.width, canvasElement.height, frameCount);
                         }
                     } else {
-                        // Demo skeleton
                         drawDemoSkeleton(ctx2d, canvasElement.width, canvasElement.height, frameCount);
                     }
 
@@ -2017,15 +2058,16 @@
                     const progress = 20 + (frameCount / totalFrames) * 70;
                     showProcessing(`正在分析第 ${frameCount}/${totalFrames} 帧...`, progress);
 
-                    // Advance video slightly
-                    videoElement.currentTime += videoElement.duration / totalFrames;
+                    // 关键修复：使用本地变量 videoDuration，不再依赖 videoElement.duration
+                    const nextTime = (frameCount / totalFrames) * videoDuration;
+                    if (nextTime < videoDuration) {
+                        videoElement.currentTime = nextTime;
+                    }
 
-                    // Faster delay between frames
                     await new Promise(r => setTimeout(r, 100));
                     analyzeFrame();
                 };
 
-                videoElement.play();
                 analyzeFrame();
 
             } catch (error) {
